@@ -1,0 +1,202 @@
+
+.large-numbers {
+    color: #fff;
+    leading-trim: both;
+    text-edge: cap;
+    font-family: 'Lekton', monospace;
+    font-size: 48px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.subblock-header {
+    color: rgba(255, 255, 255, 0.40);
+    leading-trim: both;
+    text-edge: cap;
+    font-family: 'Lekton', monospace;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    padding-left: 12px;
+}
+.suffix-bottom-left {
+    color: rgba(255, 255, 255, 0.40);
+    leading-trim: both;
+    text-edge: cap;
+    font-family: 'Lekton', monospace;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.suffix-top-left {
+    color: rgba(255, 255, 255, 0.40);
+    leading-trim: both;
+    text-edge: cap;
+    font-family: 'Lekton', monospace;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.lekton-italic-label {
+    font-family: 'Lekton', monospace;
+    font-size: 16pt;
+    font-style: italic;
+    font-weight: 400;
+    line-height: normal;
+    fill: #fff;
+    dominant-baseline: alphabetic;
+}
+
+.large-attribute-title {
+    color: #fff;
+    leading-trim: both;
+    text-edge: cap;
+    font-family: 'Lekton', monospace;
+    font-size: 32px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.small-attribute-title-solid {
+    color: #D9D9D9;
+    text-align: center;
+    leading-trim: both;
+    text-edge: cap;
+    font-family: 'Lekton', monospace;
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.small-attribute-title-2 {
+    color: rgba(255, 255, 255, 0.40);
+    text-align: center;
+    leading-trim: both;
+    text-edge: cap;
+    font-family: 'Lekton', monospace;
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.small-attribute-integer {
+    color: #fff;
+    leading-trim: both;
+    text-edge: cap;
+    font-family: 'Lekton', monospace;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.small-attribute-decimal {
+    color: #fff;
+    leading-trim: both;
+    text-edge: cap;
+    font-family: 'Lekton', monospace;
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.speed {
+    color: #fff;
+    text-align: center;
+    leading-trim: both;
+    text-edge: cap;
+    font-family: 'Lekton', monospace;
+    font-size: 96px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.large-attribute-decimal {
+    color: #fff;
+    leading-trim: both;
+    text-edge: cap;
+    font-family: 'Lekton', monospace;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.large-attribute-integer {
+    color: #fff;
+    leading-trim: both;
+    text-edge: cap;
+    font-family: 'Lekton', monospace;
+    font-size: 48px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+/* Grid Layout Styles */
+.grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 24px;
+    width: calc(100% - 40px);
+    height: calc(90vh - 24px);
+    margin: 5vh 20px;
+    overflow: hidden;
+}
+
+.grid-item {
+    background-color: #111;
+    border: 2px solid white;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+}
+
+.small-grid-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.small-grid-background {
+    position: absolute;
+    top: 5%;
+    left: 5%;
+    width: 90%;
+    height: 90%;
+    background-color: white;
+    border-radius: 8px;
+    z-index: 1;
+}
+
+.small-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 2px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+}
+
+.small-grid-item {
+    background-color: #111;
+    border-radius: 2px;
+}

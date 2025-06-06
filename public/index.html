@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>FH5 Telemetry Values</title>
+  <style>
+    body { 
+      background:#111; 
+      color:#eee; 
+      font-family:sans-serif; 
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    #values { 
+      display:flex; 
+      flex-direction:column; 
+      gap:0.25rem; 
+    }
+
+    .row { 
+      display:flex; 
+      align-items:center; 
+    }
+
+    .label {
+       width:400px; 
+      }
+
+    .bar { 
+      background:#333;
+      flex:1; 
+      height:16px; 
+      margin:0 8px; 
+      border-radius:8px; 
+      overflow:hidden; 
+      max-width: 200px;
+    }
+
+    .fill { 
+      background:#0f0; 
+      height:100%; 
+      width:0%; 
+    }
+
+    .value {
+       width:80px; 
+       text-align:right; 
+      }
+
+  </style>
+
+  <link rel="stylesheet" href="/styles/hud.css">
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Lekton:ital,wght@1,400&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="HUD">
+  </div>
+  <div id="telemetry_values">
+  </div>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script type="module" src="/main.js"></script>
+  <script type="module" src="/elements/spring.js"></script>
+  <script type="module" src="/elements/tire.js"></script>
+
+</body>
+
+</html>
