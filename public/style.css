@@ -1,6 +1,26 @@
+/* Global Color Variables */
+:root {
+    /* Primary Colors */
+    --color-primary: #fff;
+    --color-primary-40: rgba(255, 255, 255, 0.40);
+    --color-primary-05: rgba(255, 255, 255, 0.05);
+
+    /* Secondary Colors */
+    --color-secondary: #444444;
+
+    /* Background Colors */
+    --color-background: #111111;
+    --color-background-80: rgba(0, 0, 0, 0.8);
+
+    /* Functional Colors */
+    --color-brake: #F75F3D;
+    --color-throttle: #3DA3F7;
+    --color-steering: #4AE170;
+    --color-rpm-indicator: #FF0000;
+}
 
 .large-numbers {
-    color: #fff;
+    color: var(--color-primary);
     leading-trim: both;
     text-edge: cap;
     font-family: 'Lekton', monospace;
@@ -11,7 +31,7 @@
 }
 
 .subblock-header {
-    color: rgba(255, 255, 255, 0.40);
+    color: var(--color-primary-40);
     leading-trim: both;
     text-edge: cap;
     font-family: 'Lekton', monospace;
@@ -23,8 +43,8 @@
     padding-bottom: 12px;
     padding-left: 12px;
 }
-.suffix-bottom-left {
-    color: rgba(255, 255, 255, 0.40);
+.suffix-bottom-right {
+    color: var(--color-primary);
     leading-trim: both;
     text-edge: cap;
     font-family: 'Lekton', monospace;
@@ -34,8 +54,8 @@
     line-height: normal;
 }
 
-.suffix-top-left {
-    color: rgba(255, 255, 255, 0.40);
+.suffix-top-right {
+    color: var(--color-primary-40);
     leading-trim: both;
     text-edge: cap;
     font-family: 'Lekton', monospace;
@@ -51,23 +71,23 @@
     font-style: italic;
     font-weight: 400;
     line-height: normal;
-    fill: #fff;
+    fill: var(--color-primary);
     dominant-baseline: alphabetic;
 }
 
 .large-attribute-title {
-    color: #fff;
+    color: var(--color-primary);
     leading-trim: both;
     text-edge: cap;
     font-family: 'Lekton', monospace;
-    font-size: 32px;
+    font-size: 18px;
     font-style: normal;
     font-weight: 400;
     line-height: normal;
 }
 
 .small-attribute-title-solid {
-    color: #D9D9D9;
+    color: var(--color-primary);
     text-align: center;
     leading-trim: both;
     text-edge: cap;
@@ -79,7 +99,7 @@
 }
 
 .small-attribute-title-2 {
-    color: rgba(255, 255, 255, 0.40);
+    color: var(--color-primary-40);
     text-align: center;
     leading-trim: both;
     text-edge: cap;
@@ -91,7 +111,8 @@
 }
 
 .small-attribute-integer {
-    color: #fff;
+    color: var(--color-primary);
+    text-align: center;
     leading-trim: both;
     text-edge: cap;
     font-family: 'Lekton', monospace;
@@ -102,7 +123,8 @@
 }
 
 .small-attribute-decimal {
-    color: #fff;
+    color: var(--color-primary);
+    text-align: center;
     leading-trim: both;
     text-edge: cap;
     font-family: 'Lekton', monospace;
@@ -113,7 +135,7 @@
 }
 
 .speed {
-    color: #fff;
+    color: var(--color-primary);
     text-align: center;
     leading-trim: both;
     text-edge: cap;
@@ -125,7 +147,7 @@
 }
 
 .large-attribute-decimal {
-    color: #fff;
+    color: var(--color-primary);
     leading-trim: both;
     text-edge: cap;
     font-family: 'Lekton', monospace;
@@ -136,7 +158,7 @@
 }
 
 .large-attribute-integer {
-    color: #fff;
+    color: var(--color-primary);
     leading-trim: both;
     text-edge: cap;
     font-family: 'Lekton', monospace;
@@ -159,8 +181,8 @@
 }
 
 .grid-item {
-    background-color: #111;
-    border: 2px solid white;
+    background-color: var(--color-background);
+    border: 2px solid var(--color-primary);
     border-radius: 8px;
     overflow: hidden;
     position: relative;
@@ -178,7 +200,7 @@
     left: 5%;
     width: 90%;
     height: 90%;
-    background-color: white;
+    background-color: var(--color-primary);
     border-radius: 8px;
     z-index: 1;
 }
@@ -197,6 +219,6 @@
 }
 
 .small-grid-item {
-    background-color: #111;
+    background-color: var(--color-background);
     border-radius: 2px;
 }

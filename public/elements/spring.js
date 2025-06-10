@@ -12,7 +12,7 @@ const springSvgElement = document.getElementById("springSvg");
 const springSvg = springSvgElement ? d3.select("#springSvg") : null;
 
 // Default spring configuration parameters
-const spring = {
+const springConfig = {
     x: 50,
     y: 15,
     width: 10,
@@ -68,13 +68,13 @@ export function renderSpring(svgElement, travelInput) {
 
         // Shock shaft (top element, compressing)
         customSvg.append("rect")
-            .attr("x", customSpring.x - (17/2))
+            .attr("x", customSpring.x - (12/2))
             .attr("y", customSpring.y + customSpring.minCompression - customSpring.minCompression)
-            .attr("width", 17)
+            .attr("width", 12)
             .attr("height", customCompression)
             .attr("fill", "none")
             .attr("stroke-width", "2.5")
-            .attr("stroke", "#666");
+            .attr("stroke", "var(--color-secondary)");
 
         // Shock Piston
         customSvg.append("rect")
@@ -82,7 +82,7 @@ export function renderSpring(svgElement, travelInput) {
             .attr("y", customSpring.y)
             .attr("width", 19)
             .attr("height", customSpring.totalHeight - customSpring.maxCompression + customSpring.minCompression)
-            .attr("fill", "#444");
+            .attr("fill", "var(--color-secondary)");
 
         // Generate spring segments
         const springTop = customSpring.y - customSpring.totalHeight + customSpring.maxCompression;
@@ -113,7 +113,7 @@ export function renderSpring(svgElement, travelInput) {
             .attr("y1", d => d.y1)
             .attr("x2", d => d.x2)
             .attr("y2", d => d.y2)
-            .attr("stroke", "#ccc")
+            .attr("stroke", "var(--color-primary)")
             .attr("stroke-width", 4)
             .attr("stroke-linecap", "round");
 
@@ -124,7 +124,7 @@ export function renderSpring(svgElement, travelInput) {
             .attr("x2", customSpring.x + 54)
             .attr("y1", customSpring.y + customSpring.minCompression)
             .attr("y2", customSpring.y + customSpring.minCompression)
-            .attr("stroke", "#ccc")
+            .attr("stroke", "var(--color-primary)")
             .attr("stroke-width", 2);
 
         customSvg.append("text")
@@ -147,7 +147,7 @@ export function renderSpring(svgElement, travelInput) {
             .attr("x2", customSpring.x + 54)
             .attr("y1", customSpring.y + customSpring.maxCompression)
             .attr("y2", customSpring.y + customSpring.maxCompression)
-            .attr("stroke", "#ccc")
+            .attr("stroke", "var(--color-primary)")
             .attr("stroke-width", 2);
     }
 }

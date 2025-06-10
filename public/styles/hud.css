@@ -1,195 +1,202 @@
 /* hud.css */
 /* Styles for the HUD components */
 
+/* Import global variables from style.css */
+@import url('../style.css');
+
 /* Main HUD container */
 #HUD {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  z-index: 100;
-  overflow: hidden;
-  background-color: #111;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 100;
+    overflow: hidden;
+    background-color: var(--color-background);
 }
 
 /* Developer button */
 #dev-button {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  z-index: 200;
-  padding: 8px 12px;
-  background-color: #444;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 200;
+    padding: 8px 12px;
+    background-color: var(--color-secondary);
+    color: var(--color-primary);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
 }
 
 #dev-button:hover {
-  background-color: #666;
+    background-color: var(--color-secondary);
+    opacity: 0.8;
 }
 
 /* Telemetry values container */
 #telemetry_values {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  max-height: 50vh;
-  overflow-y: auto;
-  background-color: rgba(0, 0, 0, 0.8);
-  padding: 10px;
-  display: none;
-  z-index: 150;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: 50vh;
+    overflow-y: auto;
+    background-color: var(--color-background-80);
+    padding: 10px;
+    display: none;
+    z-index: 150;
 }
 
 /* Grid container */
 .grid-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-  gap: 10px;
-  width: 100%;
-  height: 100vh;
-  padding: 10px;
-  box-sizing: border-box;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    height: 100vh;
+    padding: 10px;
+    box-sizing: border-box;
 }
 
 .grid-item {
-  background-color: #222;
-  border-radius: 8px;
-  overflow: hidden;
+    background-color: var(--color-background);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Dial container styles */
+.dial-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+#rpmDialSvg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#boostGaugeSvg {
+    position: absolute;
+    top: 0;
+    left: 55%; /* Position it at the middle of the container */
+    width: 50%; /* Take up the right half of the container */
+    height: 100%;
+    pointer-events: none; /* Allow clicks to pass through to elements below */
 }
 
 /* Small grid styles */
 .small-grid-container {
-  width: 100%;
-  height: 100%;
-  position: relative;
+    width: 100%;
+    height: 100%;
+    position: relative;
 }
 
 .small-grid-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-primary-05);
+    border-radius: 8px;
 }
 
 .small-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-  gap: 10px;
-  width: 100%;
-  height: 100%;
-  padding: 10px;
-  box-sizing: border-box;
-  position: relative;
-  z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 1;
 }
 
 .small-grid-item {
-  background-color: #333;
-  border-radius: 6px;
-  overflow: hidden;
+    background-color: var(--color-background);
+    border-radius: 6px;
+    overflow: hidden;
 }
 
 /* Flex containers */
 .flex-container {
-  display: flex;
-  width: 100%;
-  height: calc(100% - 24px);
-  margin-top: 12px;
-  margin-bottom: 12px;
+    display: flex;
+    width: 100%;
+    height: calc(100% - 24px);
+    margin-top: 12px;
+    margin-bottom: 12px;
 }
 
 .svg-container {
-  width: 50%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    width: 50%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .header-container {
-  width: 50%;
-  height: 100%;
+    width: 50%;
+    height: 100%;
 }
 
 /* Car layout styles */
 .car-layout-container {
-  display: flex;
-  width: 100%;
-  height: 100%;
+    display: flex;
+    width: 100%;
+    height: 100%;
 }
 
 .car-left-container {
-  display: flex;
-  flex-direction: column;
-  width: 50%;
-  height: 100%;
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    height: 100%;
 }
 
 .car-right-container {
-  width: 50%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    width: 50%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .car-top-half-container, .car-bottom-half-container {
-  width: 100%;
-  height: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    width: 100%;
+    height: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-/* Travel display styles */
-.travel-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  margin-top: 12px;
+/* Travel, Speed, and Temperature display styles */
+.travel-container, .speed-container, .temp-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    margin-top: 12px;
+}
+
+/* Stack speed and temperature containers vertically */
+.speed-container {
+    margin-bottom: 8px;
 }
 
 .value-container {
-  display: flex;
-  align-items: baseline;
+    display: flex;
+    align-items: baseline;
 }
 
-/* Text styles */
-.subblock-header {
-  font-size: 14px;
-  color: #ccc;
-  margin-bottom: 4px;
-}
-
-.large-attribute-title {
-  font-size: 24px;
-  color: #ccc;
-}
-
-.large-attribute-integer {
-  font-size: 32px;
-  color: white;
-}
-
-.large-attribute-decimal {
-  font-size: 16px;
-  color: white;
-  margin-left: -3px;
-}
-
-.suffix-bottom-left {
-  font-size: 16px;
-  color: #ccc;
-  margin-left: 2px;
-}
+/* Note: Text styles are imported from style.css */

@@ -7,9 +7,9 @@
 ------------------------------------------------------------------------
 \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ */
 
-import { rendercarFront } from './car/carFront.js';
-import { rendercarSide } from './car/carSide.js';
-import { rendercarTop } from './car/carTop.js';
+import { rendercarFront as renderCarFront } from './car/carFront.js';
+import { rendercarSide as renderCarSide } from './car/carSide.js';
+import { rendercarTop as renderCarTop } from './car/carTop.js';
 
 /**
  * Creates the car layout in the top-right grid item
@@ -48,7 +48,7 @@ export function createCarLayout(gridItem) {
   carFrontSvg.setAttribute('height', '100%');
   carFrontSvg.id = 'carFront-svg';
   topHalfContainer.appendChild(carFrontSvg);
-  rendercarFront(carFrontSvg);
+  renderCarFront(carFrontSvg);
 
   // carSide SVG (bottom half of left side)
   const carSideSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -56,7 +56,7 @@ export function createCarLayout(gridItem) {
   carSideSvg.setAttribute('height', '100%');
   carSideSvg.id = 'carSide-svg';
   bottomHalfContainer.appendChild(carSideSvg);
-  rendercarSide(carSideSvg);
+  renderCarSide(carSideSvg);
 
   // carTop SVG (right side)
   const carTopSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -64,7 +64,7 @@ export function createCarLayout(gridItem) {
   carTopSvg.setAttribute('height', '100%');
   carTopSvg.id = 'carTop-svg';
   rightContainer.appendChild(carTopSvg);
-  rendercarTop(carTopSvg);
+  renderCarTop(carTopSvg);
 }
 
 /**
@@ -75,16 +75,16 @@ export function updateCarLayout(data) {
   // Only update if we have the necessary telemetry data
   if (data.AccelerationZ !== undefined || data.AngularVelocityX !== undefined) {
     const carSideSvg = document.getElementById('carSide-svg');
-    if (carSideSvg) rendercarSide(carSideSvg, data);
+    if (carSideSvg) renderCarSide(carSideSvg, data);
   }
 
   if (data.AngularVelocityZ !== undefined) {
     const carFrontSvg = document.getElementById('carFront-svg');
-    if (carFrontSvg) rendercarFront(carFrontSvg, data);
+    if (carFrontSvg) renderCarFront(carFrontSvg, data);
   }
 
   if (data.AngularVelocityY !== undefined) {
     const carTopSvg = document.getElementById('carTop-svg');
-    if (carTopSvg) rendercarTop(carTopSvg, data);
+    if (carTopSvg) renderCarTop(carTopSvg, data);
   }
 }

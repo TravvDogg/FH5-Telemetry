@@ -1,4 +1,4 @@
-﻿/* \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\
+/* \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\
 ------------------------------------------------------------------------
         Written by Travis Lizio | Creative Coding A3
 ------------------------------------------------------------------------
@@ -282,28 +282,32 @@ export default [
     "min": -10,
     "max": 10,
     "offset": 196,
-    "type": "readFloatLE"
+    "type": "readFloatLE",
+    "transform": value => value * 10
 },
 
     {"name": "SuspensionTravelMetersFr",
     "min": -10,
     "max": 10,
     "offset": 200,
-    "type": "readFloatLE"
+    "type": "readFloatLE",
+    "transform": value => value * 10
 },
 
     {"name": "SuspensionTravelMetersRl",
     "min": -10,
     "max": 10,
     "offset": 204,
-    "type": "readFloatLE"
+    "type": "readFloatLE",
+    "transform": value => value * 10
 },
 
     {"name": "SuspensionTravelMetersRr",
     "min": -10,
     "max": 10,
     "offset": 208,
-    "type": "readFloatLE"
+    "type": "readFloatLE",
+    "transform": value => value * 10
 },
 
     // Car Information
@@ -368,7 +372,8 @@ export default [
     "min": -10,
     "max": 10,
     "offset": 244 + bufferOffset,
-    "type": "readFloatLE"
+    "type": "readFloatLE",
+    "transform": value => value * 3.6
 },
 
     {"name": "Power",
@@ -480,7 +485,7 @@ export default [
 },
 
     // Input Information
-    {"name": "Accelerator",
+    {"name": "Throttle",
     "min": 0,
     "max": 255,
     "offset": 303 + bufferOffset,

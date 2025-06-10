@@ -12,6 +12,9 @@ import { createCarLayout, updateCarLayout } from './elements/carLayout.js';
 import { renderTire } from './elements/tire.js';
 import { renderSpring } from './elements/spring.js';
 import { preloadCarSvgs } from './elements/car/carSvgCache.js';
+import { renderRpmDial } from './elements/rpmDial.js';
+import { renderBoostGauge } from './elements/boostGauge.js';
+import { renderGForceGauge } from './elements/gForceGauge.js';
 
 /**
  * Creates the HUD interface
@@ -43,9 +46,46 @@ export function createHUD() {
     else if (i === 1) {
       createCarLayout(gridItem);
     }
+    // Add RPM dial and boost gauge to bottom-right grid item
+    else if (i === 3) {
+      // Create container for RPM dial and boost gauge
+      const dialContainer = document.createElement('div');
+      dialContainer.className = 'dial-container';
+      gridItem.appendChild(dialContainer);
+
+      // Create SVG element for RPM dial
+      const rpmDialSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      rpmDialSvg.setAttribute('width', '100%');
+      rpmDialSvg.setAttribute('height', '100%');
+      rpmDialSvg.id = 'rpmDialSvg';
+      dialContainer.appendChild(rpmDialSvg);
+
+      // Create SVG element for boost gauge
+      const boostGaugeSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      boostGaugeSvg.setAttribute('width', '100%');
+      boostGaugeSvg.setAttribute('height', '100%');
+      boostGaugeSvg.id = 'boostGaugeSvg';
+      dialContainer.appendChild(boostGaugeSvg);
+
+      // Create SVG element for G-force gauge
+      const gForceGaugeSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      gForceGaugeSvg.setAttribute('width', '45%');
+      gForceGaugeSvg.setAttribute('height', '100%');
+      gForceGaugeSvg.id = 'gForceGaugeSvg';
+      dialContainer.appendChild(gForceGaugeSvg);
+
+      // Render the RPM dial
+      renderRpmDial(rpmDialSvg);
+
+      // Render the boost gauge
+      renderBoostGauge(boostGaugeSvg);
+
+      // Render the G-force gauge
+      renderGForceGauge(gForceGaugeSvg);
+    }
   }
 
-  // Create a button to raw data view
+  // Create a button to toggle raw data view
   const devButton = document.createElement('button');
   devButton.id = 'dev-button';
   devButton.textContent = 'Developer View';
@@ -82,23 +122,23 @@ export function updateHUD(data, hudElements) {
 
   // Update the springs with the latest suspension travel data
   if (data.NormSuspensionTravelFl !== undefined) {
-    const springFl = document.getElementById('spring-svg-0');
-    if (springFl) renderSpring(springFl, 1 - data.NormSuspensionTravelFl);
+    const springFrontLeft = document.getElementById('spring-svg-0');
+    if (springFrontLeft) renderSpring(springFrontLeft, 1 - data.NormSuspensionTravelFl);
   }
 
   if (data.NormSuspensionTravelFr !== undefined) {
-    const springFr = document.getElementById('spring-svg-1');
-    if (springFr) renderSpring(springFr, 1 - data.NormSuspensionTravelFr);
+    const springFrontRight = document.getElementById('spring-svg-1');
+    if (springFrontRight) renderSpring(springFrontRight, 1 - data.NormSuspensionTravelFr);
   }
 
   if (data.NormSuspensionTravelRl !== undefined) {
-    const springRl = document.getElementById('spring-svg-2');
-    if (springRl) renderSpring(springRl, 1 - data.NormSuspensionTravelRl);
+    const springRearLeft = document.getElementById('spring-svg-2');
+    if (springRearLeft) renderSpring(springRearLeft, 1 - data.NormSuspensionTravelRl);
   }
 
   if (data.NormSuspensionTravelRr !== undefined) {
-    const springRr = document.getElementById('spring-svg-3');
-    if (springRr) renderSpring(springRr, 1 - data.NormSuspensionTravelRr);
+    const springRearRight = document.getElementById('spring-svg-3');
+    if (springRearRight) renderSpring(springRearRight, 1 - data.NormSuspensionTravelRr);
   }
 
   // Update the travel displays with the latest suspension travel data
@@ -120,26 +160,60 @@ export function updateHUD(data, hudElements) {
 
   // Update tire SVGs with the latest tire slip data
   // Check if any of the tire slip data is available
-  const hasTireSlipData = data.TireSlipAngleFl !== undefined || data.TireSlipRatioFl !== undefined ||
-                          data.TireSlipAngleFr !== undefined || data.TireSlipRatioFr !== undefined ||
-                          data.TireSlipAngleRl !== undefined || data.TireSlipRatioRl !== undefined ||
-                          data.TireSlipAngleRr !== undefined || data.TireSlipRatioRr !== undefined;
+  const hasTireSlipData =  data.TireSlipAngleFl !== undefined || data.TireSlipRatioFl !== undefined ||
+                                    data.TireSlipAngleFr !== undefined || data.TireSlipRatioFr !== undefined ||
+                                    data.TireSlipAngleRl !== undefined || data.TireSlipRatioRl !== undefined ||
+                                    data.TireSlipAngleRr !== undefined || data.TireSlipRatioRr !== undefined;
 
   if (hasTireSlipData) {
     // Update each tire SVG with the appropriate telemetry data
-    const tireFl = document.getElementById('tire-svg-0');
-    if (tireFl) renderTire(tireFl, data);
+    const tireFrontLeft = document.getElementById('tire-svg-0');
+    if (tireFrontLeft) renderTire(tireFrontLeft, data);
 
-    const tireFr = document.getElementById('tire-svg-1');
-    if (tireFr) renderTire(tireFr, data);
+    const tireFrontRight = document.getElementById('tire-svg-1');
+    if (tireFrontRight) renderTire(tireFrontRight, data);
 
-    const tireRl = document.getElementById('tire-svg-2');
-    if (tireRl) renderTire(tireRl, data);
+    const tireRearLeft = document.getElementById('tire-svg-2');
+    if (tireRearLeft) renderTire(tireRearLeft, data);
 
-    const tireRr = document.getElementById('tire-svg-3');
-    if (tireRr) renderTire(tireRr, data);
+    const tireRearRight = document.getElementById('tire-svg-3');
+    if (tireRearRight) renderTire(tireRearRight, data);
   }
 
   // Update car SVGs with telemetry data
   updateCarLayout(data);
+
+  // Update RPM dial with telemetry data
+  if (data.CurrentEngineRpm !== undefined || data.EngineMaxRpm !== undefined) {
+    const rpmDialSvg = document.getElementById('rpmDialSvg');
+    const boostGaugeSvg = document.getElementById('boostGaugeSvg');
+    const gForceGaugeSvg = document.getElementById('gForceGaugeSvg');
+
+    // Render the RPM dial and get position information
+    const rpmDialPosition = rpmDialSvg ? renderRpmDial(rpmDialSvg, data) : null;
+
+    // Render the boost gauge with position information from RPM dial
+    if (boostGaugeSvg && rpmDialPosition) {
+      renderBoostGauge(boostGaugeSvg, data, rpmDialPosition);
+    }
+
+    // Render the G-force gauge with position information from RPM dial
+    if (gForceGaugeSvg && rpmDialPosition) {
+      renderGForceGauge(gForceGaugeSvg, data, rpmDialPosition);
+    }
+  }
+
+  // Update G-force gauge when acceleration data is available
+  if (data.AccelerationX !== undefined || data.AccelerationZ !== undefined) {
+    const gForceGaugeSvg = document.getElementById('gForceGaugeSvg');
+    const rpmDialSvg = document.getElementById('rpmDialSvg');
+
+    // Get position information from RPM dial if not already rendered
+    if (gForceGaugeSvg && !gForceGaugeSvg.querySelector('*')) {
+      const rpmDialPosition = rpmDialSvg ? renderRpmDial(rpmDialSvg, data) : null;
+      if (rpmDialPosition) {
+        renderGForceGauge(gForceGaugeSvg, data, rpmDialPosition);
+      }
+    }
+  }
 }

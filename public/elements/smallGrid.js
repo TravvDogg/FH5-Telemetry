@@ -9,6 +9,7 @@
 
 import { renderTire } from './tire.js';
 import { renderSpring } from './spring.js';
+import { formatNumberWithLeadingZeros, createFormattedNumberDisplay } from './numberUtils.js';
 
 /**
  * Creates a small grid inside a grid item
@@ -81,37 +82,11 @@ export function createSmallGrid(gridItem) {
       // Create the title "Travel"
       const title = document.createElement('div');
       title.className = 'large-attribute-title';
-      title.textContent = 'Travel';
+      title.textContent = 'TRAVEL';
       travelContainer.appendChild(title);
 
-      // Create a container for the value display
-      const valueContainer = document.createElement('div');
-      valueContainer.className = 'value-container';
-      travelContainer.appendChild(valueContainer);
-
-      // Create the integer part
-      const integerPart = document.createElement('div');
-      integerPart.className = 'large-attribute-integer';
-      integerPart.id = `${smallGridItem.id}-travel-integer`;
-      valueContainer.appendChild(integerPart);
-
-      // Create the decimal *point*
-      const decimalPoint = document.createElement('div');
-      decimalPoint.className = 'large-attribute-decimal';
-      decimalPoint.textContent = '.';
-      valueContainer.appendChild(decimalPoint);
-
-      // Create the decimal *part*
-      const decimalPart = document.createElement('div');
-      decimalPart.className = 'large-attribute-decimal';
-      decimalPart.id = `${smallGridItem.id}-travel-decimal`;
-      valueContainer.appendChild(decimalPart);
-
-      // Create the suffix "CM"
-      const suffix = document.createElement('div');
-      suffix.className = 'suffix-bottom-left';
-      suffix.textContent = 'CM';
-      valueContainer.appendChild(suffix);
+      // Initialize travel display with a value of 0
+      createFormattedNumberDisplay(travelContainer, 0, 2, 2, 'CM');
     }
 
     // Create SVG element
@@ -139,34 +114,19 @@ export function createSmallGrid(gridItem) {
  * @param {number} travelValue - The travel value to display
  */
 export function updateTravelDisplay(gridItemId, travelValue) {
-  const integerEl = document.getElementById(`${gridItemId}-travel-integer`);
-  const decimalEl = document.getElementById(`${gridItemId}-travel-decimal`);
+  const travelContainer = document.querySelector(`#${gridItemId} .travel-container`);
 
-  if (integerEl && decimalEl) {
-    const absValue = Math.abs(travelValue) * 100;
+  if (travelContainer) {
+    // Convert travel value to centimeters (multiply by 100)
+    const travelValueInCm = travelValue * 100;
 
-    // Format the travel value: X.XX format
-    const integerPart = Math.floor(absValue);
-    const decimalPart = Math.round((absValue - integerPart) * 100);
-
-    // Format integer part with leading zeros at 40% opacity
-    const integerStr = integerPart.toString().padStart(2, '0');
-    integerEl.innerHTML = '';
-
-    // Apply 40% opacity to leading zeros
-    for (let i = 0; i < integerStr.length; i++) {
-      const char = document.createElement('span');
-      char.textContent = integerStr[i];
-
-      // If this is a leading zero, set opacity to 40%
-      if (i < integerStr.length - 1 && integerStr[i] === '0') {
-        char.style.opacity = '0.4';
-      }
-
-      integerEl.appendChild(char);
+    // Find the value container or create a new one if it doesn't exist
+    let valueContainer = travelContainer.querySelector('.value-container');
+    if (valueContainer) {
+      valueContainer.remove();
     }
 
-    // Format decimal part with two digits
-    decimalEl.textContent = decimalPart.toString().padStart(2, '0');
+    // Create formatted number display with 2 integer digits, 2 decimal digits, and "CM" suffix
+    createFormattedNumberDisplay(travelContainer, travelValueInCm, 2, 2, 'CM');
   }
 }
