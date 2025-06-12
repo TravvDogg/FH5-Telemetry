@@ -8,9 +8,18 @@
 \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ */
 
 import { createFormattedNumberDisplay } from './numberUtils.js';
+import fields from '../fields.js';
 
 const tireSvgElement = document.getElementById("tireSvg");
 const tireSvg = tireSvgElement ? d3.select("#tireSvg") : null;
+
+// Find tire temperature fields and their transform functions
+const tireTempFields = {
+    'TireTempFl': fields.find(field => field.name === 'TireTempFl'),
+    'TireTempFr': fields.find(field => field.name === 'TireTempFr'),
+    'TireTempRl': fields.find(field => field.name === 'TireTempRl'),
+    'TireTempRr': fields.find(field => field.name === 'TireTempRr')
+};
 
 // Configuration parameters for tire visualization
 const tire = {
@@ -18,7 +27,7 @@ const tire = {
     innerLineLength: 6,   // Length of the cardinal lines
     centerRadius: 2,      // Radius of the center circle
     indicatorRadius: 7.5, // Radius of the moving indicator
-    maxSlipRatio: 2.25,    // Value at which the indicator reaches the edge
+    maxSlipRatio: 2,    // Value at which the indicator reaches the edge
     cornerRadius: 16      // Radius of the rectangle corners
 };
 
@@ -232,39 +241,21 @@ export function renderTire(svgElement, telemetryData) {
             .attr("fill", "var(--color-primary)")
             .attr("transform", `rotate(${angle * (180/Math.PI) + 90}, ${indicatorX}, ${indicatorY})`);
 
-        // Extract tire position from SVG ID to determine which telemetry data to use for speed and temperature
+        // Extract tire position from SVG ID to determine which telemetry data to use for temperature
         tirePosition = svgElement.id.split('-').pop();
 
-        // Clear existing speed and temperature displays
-        const existingSpeedContainer = headerContainer.querySelector('.speed-container');
-        if (existingSpeedContainer) {
-            existingSpeedContainer.remove();
-        }
-
+        // Clear existing temperature display
         const existingTempContainer = headerContainer.querySelector('.temp-container');
         if (existingTempContainer) {
             existingTempContainer.remove();
         }
 
-        // Create containers for speed and temperature displays
-        const speedContainer = document.createElement('div');
-        speedContainer.className = 'speed-container';
-        headerContainer.appendChild(speedContainer);
-
+        // Create container for temperature display
         const tempContainer = document.createElement('div');
         tempContainer.className = 'temp-container';
         headerContainer.appendChild(tempContainer);
 
-        // Add titles with explicit styling to ensure visibility
-        const speedTitle = document.createElement('div');
-        speedTitle.className = 'large-attribute-title';
-        speedTitle.textContent = 'SPEED';
-        speedTitle.style.color = 'var(--color-primary)';
-        speedTitle.style.opacity = '1';
-        speedTitle.style.fontSize = '24px';
-        speedTitle.style.fontFamily = "'Lekton', monospace";
-        speedContainer.appendChild(speedTitle);
-
+        // Add title with explicit styling to ensure visibility
         const tempTitle = document.createElement('div');
         tempTitle.className = 'large-attribute-title';
         tempTitle.textContent = 'TEMP';
@@ -275,32 +266,33 @@ export function renderTire(svgElement, telemetryData) {
         tempContainer.appendChild(tempTitle);
 
         // Default values
-        let speed = 0;
         let temperature = 0;
+        let tireTempField = null;
 
         // Apply telemetry data if available
         if (telemetryData) {
             // Determine which tire's data to use based on the SVG element's ID
             if (tirePosition === '0') { // Front Left
-                speed = telemetryData.Speed || 0;
                 temperature = telemetryData.TireTempFl || 0;
+                tireTempField = tireTempFields['TireTempFl'];
             } else if (tirePosition === '1') { // Front Right
-                speed = telemetryData.Speed || 0;
                 temperature = telemetryData.TireTempFr || 0;
+                tireTempField = tireTempFields['TireTempFr'];
             } else if (tirePosition === '2') { // Rear Left
-                speed = telemetryData.Speed || 0;
                 temperature = telemetryData.TireTempRl || 0;
+                tireTempField = tireTempFields['TireTempRl'];
             } else if (tirePosition === '3') { // Rear Right
-                speed = telemetryData.Speed || 0;
                 temperature = telemetryData.TireTempRr || 0;
+                tireTempField = tireTempFields['TireTempRr'];
+            }
+
+            // Apply transform function to temperature if available
+            if (tireTempField && tireTempField.transform && temperature !== 0) {
+                temperature = tireTempField.transform(temperature);
             }
         }
 
-        // Convert speed to km/h if needed (assuming it's in m/s)
-        const speedKmh = speed * 3.6;
-
-        // Create formatted displays for speed and temperature
-        createFormattedNumberDisplay(speedContainer, speedKmh, 3, 1, 'KM/H');
+        // Create formatted display for temperature
         createFormattedNumberDisplay(tempContainer, temperature, 3, 1, '°C');
     }
 }

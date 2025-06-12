@@ -12,6 +12,7 @@ import { createCarLayout, updateCarLayout } from './elements/carLayout.js';
 import { renderTire } from './elements/tire.js';
 import { renderSpring } from './elements/spring.js';
 import { preloadCarSvgs } from './elements/car/carSvgCache.js';
+import { preloadAlertSvgs } from './elements/alertSvgCache.js';
 import { renderRpmDial } from './elements/rpmDial.js';
 import { renderBoostGauge } from './elements/boostGauge.js';
 import { renderGForceGauge } from './elements/gForceGauge.js';
@@ -21,8 +22,9 @@ import { renderGForceGauge } from './elements/gForceGauge.js';
  * @returns {Object} Object with data storage for telemetry updates
  */
 export function createHUD() {
-  // Preload car SVGs to ensure they're ready when needed
+  // Preload SVGs to ensure they're ready when needed
   preloadCarSvgs();
+  preloadAlertSvgs();
 
   const hudContainer = document.getElementById('HUD');
 
@@ -69,7 +71,7 @@ export function createHUD() {
 
       // Create SVG element for G-force gauge
       const gForceGaugeSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      gForceGaugeSvg.setAttribute('width', '45%');
+      gForceGaugeSvg.setAttribute('width', '100%');
       gForceGaugeSvg.setAttribute('height', '100%');
       gForceGaugeSvg.id = 'gForceGaugeSvg';
       dialContainer.appendChild(gForceGaugeSvg);
@@ -193,12 +195,14 @@ export function updateHUD(data, hudElements) {
     const rpmDialPosition = rpmDialSvg ? renderRpmDial(rpmDialSvg, data) : null;
 
     // Render the boost gauge with position information from RPM dial
-    if (boostGaugeSvg && rpmDialPosition) {
+    // Always render the gauge, even if rpmDialPosition is null
+    if (boostGaugeSvg) {
       renderBoostGauge(boostGaugeSvg, data, rpmDialPosition);
     }
 
     // Render the G-force gauge with position information from RPM dial
-    if (gForceGaugeSvg && rpmDialPosition) {
+    // Always render the gauge, even if rpmDialPosition is null
+    if (gForceGaugeSvg) {
       renderGForceGauge(gForceGaugeSvg, data, rpmDialPosition);
     }
   }
@@ -208,12 +212,24 @@ export function updateHUD(data, hudElements) {
     const gForceGaugeSvg = document.getElementById('gForceGaugeSvg');
     const rpmDialSvg = document.getElementById('rpmDialSvg');
 
-    // Get position information from RPM dial if not already rendered
-    if (gForceGaugeSvg && !gForceGaugeSvg.querySelector('*')) {
+    // Always update the G-force gauge when acceleration data is available
+    if (gForceGaugeSvg) {
+      // Try to get position from RPM dial, but render the gauge even if position is not available
       const rpmDialPosition = rpmDialSvg ? renderRpmDial(rpmDialSvg, data) : null;
-      if (rpmDialPosition) {
-        renderGForceGauge(gForceGaugeSvg, data, rpmDialPosition);
-      }
+      renderGForceGauge(gForceGaugeSvg, data, rpmDialPosition);
+    }
+  }
+
+  // Update boost gauge when boost data is available
+  if (data.Boost !== undefined) {
+    const boostGaugeSvg = document.getElementById('boostGaugeSvg');
+    const rpmDialSvg = document.getElementById('rpmDialSvg');
+
+    // Always update the boost gauge when boost data is available
+    if (boostGaugeSvg) {
+      // Try to get position from RPM dial, but render the gauge even if position is not available
+      const rpmDialPosition = rpmDialSvg ? renderRpmDial(rpmDialSvg, data) : null;
+      renderBoostGauge(boostGaugeSvg, data, rpmDialPosition);
     }
   }
 }

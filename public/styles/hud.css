@@ -2,7 +2,7 @@
 /* Styles for the HUD components */
 
 /* Import global variables from style.css */
-@import url('../style.css');
+@import url('style.css');
 
 /* Main HUD container */
 #HUD {
@@ -81,15 +81,27 @@
     left: 0;
     width: 100%;
     height: 100%;
+    z-index: 1; /* Ensure it's below the boost gauge and G-force gauge */
 }
 
 #boostGaugeSvg {
     position: absolute;
     top: 0;
-    left: 55%; /* Position it at the middle of the container */
-    width: 50%; /* Take up the right half of the container */
+    left: 0; /* Start from the left edge like the other gauges */
+    width: 100%; /* Take up the full width like the other gauges */
     height: 100%;
     pointer-events: none; /* Allow clicks to pass through to elements below */
+    z-index: 5; /* Ensure it's above the RPM dial but below the G-force gauge */
+}
+
+#gForceGaugeSvg {
+    position: absolute;
+    top: 0;
+    left: 0; /* Start from the left edge like the other gauges */
+    width: 100%; /* Take up the full width like the other gauges */
+    height: 100%;
+    pointer-events: none; /* Allow clicks to pass through to elements below */
+    z-index: 10; /* Ensure it's above other elements */
 }
 
 /* Small grid styles */
@@ -186,7 +198,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
-    margin-top: 12px;
+    margin-top: 0px;
 }
 
 /* Stack speed and temperature containers vertically */

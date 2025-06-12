@@ -10,6 +10,7 @@
 import { formatNumberWithLeadingZeros } from './numberUtils.js';
 import { RadialNumbers } from './radialNumbers.js';
 import { polarToCartesian } from './geometryUtils.js';
+import { getCachedAlertSvg } from './alertSvgCache.js';
 
 const rpmDialSvgElement = document.getElementById("rpmDialSvg");
 const rpmDialSvg = rpmDialSvgElement ? d3.select("#rpmDialSvg") : null;
@@ -38,6 +39,16 @@ const rpmDial = {
     controlArcOuterRadius: 155, // Outer radius of the control arcs (outerRadius + 12)
     controlArcInnerRadius: 148,  // Inner radius of the control arcs (innerRadius + 3)
     controlArcStrokeWidth: 1,   // Stroke width of the control arcs
+
+    // Configuration for indicator circles
+    indicatorCircles: {
+        count: 8,              // Number of indicator circles
+        radius: 17,            // Radius of each indicator circle
+        strokeWidth: 2,        // Stroke width of each indicator circle
+        strokeColor: "white",  // Stroke color of each indicator circle
+        defaultFill: "var(--color-primary)",  // Default fill color
+        activeFill: "var(--color-warning-activation)"  // Fill color when activated
+    },
 
     // Colors for the control arcs
     brakeColor: "var(--color-brake)",      // Red color for brake arc
@@ -160,8 +171,62 @@ export function renderRpmDial(svgElement, telemetryData) {
             : 0;
 
         // Calculate the exact ratio based on the current RPM and max RPM
-        const rpmRatio = Math.min(currentRpm / engineMaxRpm, 1.0);
+        const rpmRatio = currentRpm / (maxRpmThousands * 1000);
         const indicatorAngle = rpmDial.startAngle + rpmRatio * (rpmDial.endAngle - rpmDial.startAngle);
+
+        // Create a conic gradient from start to needle position
+        const gradientId = "rpmDialGradient";
+        const clipPathId = "rpmDialClipPath";
+
+        // Create defs section for gradient and clip path
+        const defs = svg.append("defs");
+
+        // Create a clip path for the arc section
+        defs.append("clipPath")
+            .attr("id", clipPathId)
+            .append("path")
+            .attr("d", d3.arc()
+                .innerRadius(rpmDial.innerRadius)
+                .outerRadius(rpmDial.outerRadius)
+                .startAngle(rpmDial.startAngle * (Math.PI / 180))
+                .endAngle(indicatorAngle * (Math.PI / 180))
+            )
+            .attr("transform", `translate(${centerX}, ${dialCenterY})`);
+
+        // Create a conic gradient definition using SVG's radial gradient to simulate a conic effect
+        const gradient = defs.append("radialGradient")
+            .attr("id", gradientId)
+            .attr("gradientUnits", "userSpaceOnUse")
+            .attr("cx", centerX)
+            .attr("cy", dialCenterY)
+            .attr("r", rpmDial.outerRadius * 2) // Larger radius for smoother gradient
+            .attr("fx", polarToCartesian(centerX, dialCenterY, rpmDial.innerRadius, rpmDial.startAngle).x)
+            .attr("fy", polarToCartesian(centerX, dialCenterY, rpmDial.innerRadius, rpmDial.startAngle).y)
+            .attr("spreadMethod", "pad");
+
+        gradient.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", "black")
+            .attr("stop-opacity", "0");
+
+        gradient.append("stop")
+            .attr("offset", "50%")
+            .attr("stop-color", "gray")
+            .attr("stop-opacity", "0.5");
+
+        gradient.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", "white")
+            .attr("stop-opacity", "1");
+
+        // Create a full circle for the gradient fill that will be clipped
+        const gradientCircle = svg.append("circle")
+            .attr("cx", centerX)
+            .attr("cy", dialCenterY)
+            .attr("r", rpmDial.outerRadius)
+            .attr("fill", `url(#${gradientId})`)
+            .attr("clip-path", `url(#${clipPathId})`)
+            .attr("stroke", "none");
 
         // Draw indicator line
         const indicatorInnerPoint = polarToCartesian(centerX, dialCenterY, rpmDial.innerRadius, indicatorAngle);
@@ -202,6 +267,173 @@ export function renderRpmDial(svgElement, telemetryData) {
             .attr("class", "large-numbers")
             .attr("fill", "var(--color-primary)")
             .text(gearText);
+
+        // Draw the 8 indicator circles evenly spaced between gear circle and inner radius
+        const circleRadius = rpmDial.indicatorCircles.radius;
+        const circleCount = rpmDial.indicatorCircles.count;
+        const circleDistance = (rpmDial.innerRadius - rpmDial.gearCircleRadius - circleRadius * 2) / 2;
+        const circleOrbitRadius = rpmDial.gearCircleRadius + circleDistance + circleRadius;
+
+        // Create a group for all indicator circles
+        const indicatorCirclesGroup = svg.append("g")
+            .attr("transform", `translate(${centerX}, ${dialCenterY})`)
+            .attr("id", "indicator-circles-group");
+
+        // Calculate the angular offset needed to prevent circles from extending beyond the arc edges
+        const circleRadiusAngle = Math.atan2(circleRadius, circleOrbitRadius) * (180 / Math.PI);
+
+        // Adjust the start and end angles to account for the circle radius
+        const adjustedStartAngle = rpmDial.startAngle + circleRadiusAngle;
+        const adjustedEndAngle = rpmDial.endAngle - circleRadiusAngle;
+
+        // Calculate the effective angle range for positioning the circles
+        const effectiveAngleRange = adjustedEndAngle - adjustedStartAngle;
+
+        // Draw each indicator circle
+        for (let i = 0; i < circleCount; i++) {
+            // Calculate angle for this circle (evenly distributed along the adjusted arc)
+            let angle;
+            if (circleCount === 1) {
+                // If there's only one circle, place it in the middle
+                angle = (adjustedStartAngle + effectiveAngleRange / 2) * (Math.PI / 180);
+            } else {
+                // Otherwise, distribute evenly along the adjusted arc
+                angle = (adjustedStartAngle + (i * (effectiveAngleRange / (circleCount - 1)))) * (Math.PI / 180);
+            }
+
+            // Calculate position
+            const x = Math.sin(angle) * circleOrbitRadius;
+            const y = -Math.cos(angle) * circleOrbitRadius;
+
+            // Determine if this circle should be active based on telemetry data
+            // This is a placeholder - actual activation logic will depend on specific requirements
+            let isActive = false;
+
+            // Activation logic based on the specified requirements
+            if (telemetryData) {
+                switch(i) {
+                    case 0: // Circle 1: none (no activation)
+                        isActive = false;
+                        break;
+                    case 1: // Circle 2: any suspension bottom out (any suspensiontravelnorm at 1)
+                        isActive = telemetryData.NormSuspensionTravelFl === 1 ||
+                                  telemetryData.NormSuspensionTravelFr === 1 ||
+                                  telemetryData.NormSuspensionTravelRl === 1 ||
+                                  telemetryData.NormSuspensionTravelRr === 1;
+                        break;
+                    case 2: // Circle 3: none (no activation)
+                        isActive = false;
+                        break;
+                    case 3: // Circle 4: any wheel off ground (indicated by any wheel's combinedSlip == 0)
+                        isActive = telemetryData.TireCombinedSlipFl === 0 ||
+                                  telemetryData.TireCombinedSlipFr === 0 ||
+                                  telemetryData.TireCombinedSlipRl === 0 ||
+                                  telemetryData.TireCombinedSlipRr === 0;
+                        break;
+                    case 4: // Circle 5: any wheel loss of traction (indicated by any wheels combinedSlip >= maxSlipRatio)
+                        const maxSlipRatio = 2; // Value from tire.js
+                        isActive = telemetryData.TireCombinedSlipFl >= maxSlipRatio ||
+                                  telemetryData.TireCombinedSlipFr >= maxSlipRatio ||
+                                  telemetryData.TireCombinedSlipRl >= maxSlipRatio ||
+                                  telemetryData.TireCombinedSlipRr >= maxSlipRatio;
+                        break;
+                    case 5: // Circle 6: none (no activation)
+                        isActive = false;
+                        break;
+                    case 6: // Circle 7: handbrake (any value above 0 from Handbrake telemetry)
+                        isActive = telemetryData.Handbrake > 0;
+                        break;
+                    case 7: // Circle 8: none (no activation)
+                        isActive = false;
+                        break;
+                }
+            }
+
+            // Draw the circle
+            indicatorCirclesGroup.append("circle")
+                .attr("cx", x)
+                .attr("cy", y)
+                .attr("r", circleRadius)
+                .attr("fill", "none")
+                .attr("stroke", rpmDial.indicatorCircles.strokeColor)
+                .attr("stroke-width", rpmDial.indicatorCircles.strokeWidth);
+
+            // Create a group for this indicator's SVG content
+            const svgContentGroup = indicatorCirclesGroup.append("g")
+                .attr("transform", `translate(${x}, ${y})`)
+                .attr("class", "indicator-svg-content")
+                .attr("data-indicator-index", i);
+
+            // Add SVG content inside the circle based on the indicator index
+            // Determine which SVG to use for this indicator
+            let svgType;
+            switch(i) {
+                case 0: // Circle 1: none
+                    svgType = "none";
+                    break;
+                case 1: // Circle 2: suspension bottom out
+                    svgType = "suspension";
+                    break;
+                case 2: // Circle 3: none
+                    svgType = "none";
+                    break;
+                case 3: // Circle 4: wheel off ground
+                    svgType = "off-ground";
+                    break;
+                case 4: // Circle 5: wheel loss of traction
+                    svgType = "slip";
+                    break;
+                case 5: // Circle 6: none
+                    svgType = "none";
+                    break;
+                case 6: // Circle 7: handbrake
+                    svgType = "handbrake";
+                    break;
+                case 7: // Circle 8: none
+                    svgType = "none";
+                    break;
+            }
+
+            // Get the cached SVG
+            const cachedSvg = getCachedAlertSvg(svgType);
+
+            if (cachedSvg) {
+                // Extract the SVG element from the cached data
+                const svgNode = cachedSvg.documentElement;
+
+                // Get the original viewBox to maintain aspect ratio
+                const viewBox = svgNode.getAttribute("viewBox");
+                const [, , originalWidth, originalHeight] = viewBox.split(" ").map(Number);
+
+                // Calculate scaling factor to fit inside the circle
+                const maxDimension = circleRadius * 1.5; // Leave some padding
+                const scale = maxDimension / Math.max(originalWidth, originalHeight);
+
+                // Apply the fill color based on activation state
+                const paths = svgNode.querySelectorAll("path");
+                paths.forEach(path => {
+                    path.setAttribute("fill", isActive ? rpmDial.indicatorCircles.activeFill : rpmDial.indicatorCircles.defaultFill);
+                });
+
+                // Calculate the center offset based on the original dimensions and scale
+                // Apply scale first, then translation to ensure proper centering
+                const svgGroup = svgContentGroup.append("g")
+                    .attr("transform", `scale(${scale}) translate(${-originalWidth / 2}, ${-originalHeight / 2})`);
+
+                // Append all child nodes from the loaded SVG
+                Array.from(svgNode.childNodes).forEach(childNode => {
+                    if (childNode.nodeType === 1) { // Element node
+                        svgGroup.node().appendChild(childNode.cloneNode(true));
+                    }
+                });
+            } else {
+                // If SVG is not cached yet (should not happen if preloaded correctly),
+                // show a simple placeholder
+                svgContentGroup.append("circle")
+                    .attr("r", 10)
+                    .attr("fill", isActive ? rpmDial.indicatorCircles.activeFill : rpmDial.indicatorCircles.defaultFill);
+            }
+        }
 
         // Add "RPM" text below the gear circle
         svg.append("text")

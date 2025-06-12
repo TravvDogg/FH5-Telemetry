@@ -24,6 +24,9 @@ const gForceGauge = {
     innerStrokeWidth: 1
 };
 
+// RPM dial radius for positioning calculations
+const rpmDialOuterRadius = 143;  // Same as in rpmDial.js
+
 if (gForceGaugeSvg) {
     renderGForceGauge(gForceGaugeSvg);
 }
@@ -49,16 +52,28 @@ export function renderGForceGauge(svgElement, telemetryData, rpmDialPosition) {
         // Clear existing content
         svg.selectAll("*").remove();
 
-        // If we have position information from the rpmDial, use it to position the G-force gauge
+        // Default position for the G-force gauge
         let gForceGaugeX = centerX;
         let gForceGaugeY = centerY;
 
+        // Always render the gauge, even if rpmDialPosition is null
+        // This ensures the gauge is visible even if the RPM dial isn't rendered properly
         if (rpmDialPosition) {
-            // Position the G-force gauge to the right of the boost gauge
-            // The boost gauge is positioned at rpmDialPosition.rightEdge
-            // We'll position the G-force gauge at rpmDialPosition.rightEdge + 2*gForceGauge.outerRadius
-            gForceGaugeX = rpmDialPosition.rightEdge + 2 * gForceGauge.outerRadius;
+            // Position the G-force gauge to the left of the RPM dial
+            // Using the same logic as the boost gauge, but on the left side
+
+            // For consistency, we'll calculate the center of the RPM dial first
+            const rpmDialCenterX = rpmDialPosition.rightEdge - rpmDialOuterRadius;
+            // Then calculate the left edge from the center
+            const rpmDialLeftEdge = rpmDialCenterX - rpmDialOuterRadius;
+            // Position the G-force gauge to the left of the RPM dial
+            gForceGaugeX = rpmDialLeftEdge - 2 * gForceGauge.outerRadius;
             gForceGaugeY = rpmDialPosition.topEdge + gForceGauge.outerRadius;
+        } else {
+            // If no rpmDialPosition is provided, use a fixed position relative to the center
+            // This ensures the gauge is still visible and positioned correctly
+            gForceGaugeX = centerX - rpmDialOuterRadius - 2 * gForceGauge.outerRadius;
+            gForceGaugeY = centerY;
         }
 
         // Draw outer circle
@@ -140,8 +155,8 @@ export function renderGForceGauge(svgElement, telemetryData, rpmDialPosition) {
         if (telemetryData) {
             // Get lateral G-force (AccelerationX) and longitudinal G-force (AccelerationZ)
             // Convert from m/s² to G (1G = 9.81 m/s²)
-            const lateralG = telemetryData.AccelerationX ? telemetryData.AccelerationX / 9.81 : 0;
-            const longitudinalG = telemetryData.AccelerationZ ? telemetryData.AccelerationZ / 9.81 : 0;
+            const lateralG = telemetryData.AccelerationX ? -telemetryData.AccelerationX / 9.81 * 0.9: 0;
+            const longitudinalG = telemetryData.AccelerationZ ? -telemetryData.AccelerationZ / 9.81 * 0.9: 0;
 
             // Normalize G-forces
             const normalizedLateralG = Math.min(Math.max(lateralG / gForceGauge.maxGForce, -1), 1);
@@ -219,55 +234,61 @@ export function renderGForceGauge(svgElement, telemetryData, rpmDialPosition) {
             .attr("fill", "var(--color-primary-40)")
             .text("G-FORCE");
 
-        // Calculate the magnitude of G-force if telemetry data is available
-        if (telemetryData) {
-            // Get lateral G-force (AccelerationX) and longitudinal G-force (AccelerationZ)
-            // Convert from m/s² to G (1G = 9.81 m/s²)
-            const lateralG = telemetryData.AccelerationX ? telemetryData.AccelerationX / 9.81 : 0;
-            const longitudinalG = telemetryData.AccelerationZ ? telemetryData.AccelerationZ / 9.81 : 0;
+        // Calculate the magnitude of G-force (always render, with default values if needed)
+        // Get lateral G-force (AccelerationX) and longitudinal G-force (AccelerationZ)
+        // Convert from m/s² to G (1G = 9.81 m/s²)
+        const lateralG = (telemetryData && telemetryData.AccelerationX !== undefined) 
+            ? telemetryData.AccelerationX / 9.81 * 0.9
+            : 0;
+        const longitudinalG = (telemetryData && telemetryData.AccelerationZ !== undefined) 
+            ? telemetryData.AccelerationZ / 9.81 * 0.9
+            : 0;
 
-            // Calculate the magnitude of G-force (Pythagorean theorem)
-            const gForceMagnitude = Math.sqrt(lateralG * lateralG + longitudinalG * longitudinalG);
+        // Check if we're using default values
+        const isDefaultGForce = !(telemetryData && (telemetryData.AccelerationX !== undefined || telemetryData.AccelerationZ !== undefined));
 
-            // Extract integer and decimal parts
-            const integerPart = Math.floor(gForceMagnitude);
-            const decimalPart = gForceMagnitude.toFixed(1).split('.')[1];
+        // Calculate the magnitude of G-force (Pythagorean theorem)
+        const gForceMagnitude = Math.sqrt(lateralG * lateralG + longitudinalG * longitudinalG);
 
-            // Format integer part with leading zeros
-            const formattedInteger = formatNumberWithLeadingZeros(integerPart, 1);
+        // Extract integer and decimal parts
+        const integerPart = Math.floor(gForceMagnitude);
+        const decimalPart = gForceMagnitude.toFixed(1).split('.')[1];
 
-            // Create a container for the integer part
-            const integerContainer = svg.append("g")
-                .attr("transform", `translate(${gForceGaugeX}, ${gForceGaugeY + gForceGauge.outerRadius + 35})`);
+        // Format integer part with leading zeros
+        const formattedInteger = formatNumberWithLeadingZeros(integerPart, 1);
 
-            // Calculate total width for centering
-            let totalWidth = formattedInteger.length * 8;
+        // Create a container for the integer part
+        const integerContainer = svg.append("g")
+            .attr("transform", `translate(${gForceGaugeX}, ${gForceGaugeY + gForceGauge.outerRadius + 35})`);
 
-            // Center the text by starting at negative half of total width
-            let xOffset = -totalWidth / 2;
+        // Calculate total width for centering
+        let totalWidth = formattedInteger.length * 8;
 
-            // Add each character with appropriate opacity
-            formattedInteger.forEach(char => {
-                integerContainer.append("text")
-                    .attr("x", xOffset)
-                    .attr("y", 0)
-                    .attr("text-anchor", "middle")
-                    .attr("class", "small-attribute-integer")
-                    .attr("fill", "var(--color-primary)")
-                    .attr("opacity", char.opacity)
-                    .text(char.text);
+        // Center the text by starting at negative half of total width
+        let xOffset = -totalWidth / 2;
 
-                xOffset += 8; // Adjust spacing for monospaced font
-            });
-
-            // Add decimal part of G-force value right next to the integer part
+        // Add each character with appropriate opacity
+        formattedInteger.forEach(char => {
             integerContainer.append("text")
                 .attr("x", xOffset)
                 .attr("y", 0)
                 .attr("text-anchor", "middle")
-                .attr("class", "small-attribute-decimal")
+                .attr("class", "small-attribute-integer")
                 .attr("fill", "var(--color-primary)")
-                .text(`.${decimalPart}`);
-        }
+                .attr("opacity", isDefaultGForce ? 0.5 : char.opacity) // Reduce opacity for default values
+                .text(char.text);
+
+            xOffset += 8; // Adjust spacing for monospaced font
+        });
+
+        // Add decimal part of G-force value right next to the integer part
+        integerContainer.append("text")
+            .attr("x", xOffset)
+            .attr("y", 0)
+            .attr("text-anchor", "middle")
+            .attr("class", "small-attribute-decimal")
+            .attr("fill", "var(--color-primary)")
+            .attr("opacity", isDefaultGForce ? 0.5 : 1) // Reduce opacity for default values
+            .text(`.${decimalPart}`);
     }
 }

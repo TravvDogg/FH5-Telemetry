@@ -102,6 +102,7 @@ export function createFormattedNumberDisplay(container, value, integerDigits, de
     if (suffix) {
         const suffixElement = document.createElement('div');
         suffixElement.className = 'suffix-bottom-right';
+        suffixElement.style.opacity = '0.4';
         suffixElement.textContent = suffix;
         valueContainer.appendChild(suffixElement);
     }

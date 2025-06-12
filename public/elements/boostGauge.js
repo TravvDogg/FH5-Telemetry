@@ -10,6 +10,7 @@
 import { formatNumberWithLeadingZeros } from './numberUtils.js';
 import { RadialNumbers } from './radialNumbers.js';
 import { polarToCartesian } from './geometryUtils.js';
+import fields from '../fields.js';
 
 const boostGaugeSvgElement = document.getElementById("boostGaugeSvg");
 const boostGaugeSvg = boostGaugeSvgElement ? d3.select("#boostGaugeSvg") : null;
@@ -18,6 +19,10 @@ const boostGaugeSvg = boostGaugeSvgElement ? d3.select("#boostGaugeSvg") : null;
 const arcSpaceDegrees = 90;
 const arcStartDegrees = (-180 + (arcSpaceDegrees / 2));
 const arcEndDegrees = (90 + (arcSpaceDegrees / 2));
+
+// RPM dial radius for positioning calculations
+const rpmDialOuterRadius = 143;
+
 const boostGauge = {
     outerRadius: (143) / 2.5,
     innerRadius: (95) / 3,
@@ -62,14 +67,19 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
         // Clear existing content
         svg.selectAll("*").remove();
 
-        // If we have position information from the rpmDial, use it to position the boost gauge
+        // Default position for the boost gauge
         let boostGaugeX = centerX;
         let boostGaugeY = centerY;
 
         if (rpmDialPosition) {
-            // Position the boost gauge so its left side aligns with the right side of the rpmDial
-            boostGaugeX = rpmDialPosition.rightEdge;
+            const rpmDialCenterX = rpmDialPosition.rightEdge - rpmDialOuterRadius;
+            const rpmDialRightEdge = rpmDialCenterX + rpmDialOuterRadius;
+            // Position the boost gauge to the right of the RPM dial
+            boostGaugeX = rpmDialRightEdge + 2 * boostGauge.outerRadius;
             boostGaugeY = rpmDialPosition.topEdge + boostGauge.outerRadius;
+        } else {
+            boostGaugeX = centerX + rpmDialOuterRadius + 2 * boostGauge.outerRadius;
+            boostGaugeY = centerY;
         }
 
         // Create arc generators
@@ -151,7 +161,6 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
             outerStrokeWidth: boostGauge.outerStrokeWidth
         });
 
-        // Create array with just two numbers: -4 and 4
         const numbers = [-4, 4];
 
         // Render the numbers
@@ -161,17 +170,81 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
             rotate180: true
         });
 
-        // Add needle display centered at 0, top middle of the gauge
-        // Get boost value from telemetry data (default to 0)
-        const boostValue = (telemetryData && telemetryData.Boost !== undefined) 
-            ? telemetryData.Boost 
-            : 0; // Default value of 0
+        const boostField = fields.find(field => field.name === 'Boost');
 
-        // Calculate needle angle (0 degrees is top, positive values rotate clockwise)
-        // Map boost value from -4 to 4 to angle from left to right of the gauge
-        const boostRange = 8; // -4 to 4
-        const normalizedBoost = (boostValue + 4) / boostRange; // 0 to 1
-        const needleAngle = boostGauge.startAngle + normalizedBoost * (boostGauge.endAngle - boostGauge.startAngle);
+        // Get boost value from telemetry data and apply transform if available
+        let boostValue = 0; // Default value
+        if (telemetryData && telemetryData.Boost !== undefined) {
+            // Apply transform function if available
+            if (boostField && boostField.transform) {
+                boostValue = boostField.transform(telemetryData.Boost);
+            } else {
+                boostValue = telemetryData.Boost;
+            }
+        }
+
+        const needleAngle = Math.min(Math.max((boostValue / 4), -1), 1) * (boostGauge.endAngle);
+
+        // Create a conic gradient centered at top dead center
+        const gradientId = "boostGaugeGradient";
+        const clipPathId = "boostGaugeClipPath";
+
+        // Create defs section for gradient and clip path
+        const defs = svg.append("defs");
+
+        // Create a clip path for the arc section
+        // The clip path should go from top dead center (0 degrees) to the needle position
+        const startAngleForClip = 0; // Top dead center
+        const endAngleForClip = needleAngle;
+
+        defs.append("clipPath")
+            .attr("id", clipPathId)
+            .append("path")
+            .attr("d", d3.arc()
+                .innerRadius(boostGauge.innerRadius)
+                .outerRadius(boostGauge.outerRadius)
+                .startAngle(startAngleForClip * (Math.PI / 180))
+                .endAngle(endAngleForClip * (Math.PI / 180))
+            )
+            .attr("transform", `translate(${boostGaugeX}, ${boostGaugeY})`);
+
+        // Create a radial gradient definition to simulate a conic effect
+        const gradient = defs.append("radialGradient")
+            .attr("id", gradientId)
+            .attr("gradientUnits", "userSpaceOnUse")
+            .attr("cx", boostGaugeX)
+            .attr("cy", boostGaugeY)
+            .attr("r", boostGauge.outerRadius * 2) // Larger radius for smoother gradient
+            .attr("fx", polarToCartesian(boostGaugeX, boostGaugeY, boostGauge.innerRadius, 0).x) // Top dead center
+            .attr("fy", polarToCartesian(boostGaugeX, boostGaugeY, boostGauge.innerRadius, 0).y) // Top dead center
+            .attr("spreadMethod", "pad");
+
+        // Start with black at 0% opacity at top dead center
+        gradient.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", "black")
+            .attr("stop-opacity", "0");
+
+        // Add color-boost-gauge-neg with 20% opacity on the left side
+        gradient.append("stop")
+            .attr("offset", "25%")
+            .attr("stop-color", "var(--color-boost-gauge-neg)")
+            .attr("stop-opacity", "0.2");
+
+        // Add color-boost-gauge-pos with 20% opacity on the right side
+        gradient.append("stop")
+            .attr("offset", "75%")
+            .attr("stop-color", "var(--color-boost-gauge-pos)")
+            .attr("stop-opacity", "0.2");
+
+        // Create a full circle for the gradient fill that will be clipped
+        const gradientCircle = svg.append("circle")
+            .attr("cx", boostGaugeX)
+            .attr("cy", boostGaugeY)
+            .attr("r", boostGauge.outerRadius)
+            .attr("fill", `url(#${gradientId})`)
+            .attr("clip-path", `url(#${clipPathId})`)
+            .attr("stroke", "none");
 
         // Calculate needle points
         const needleBasePoint = polarToCartesian(boostGaugeX, boostGaugeY, boostGauge.innerRadius, needleAngle);
@@ -186,16 +259,20 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
             .attr("stroke", boostGauge.needleColor)
             .attr("stroke-width", boostGauge.needleWidth);
 
-        // Add "PSI" text below the gauge
+        // Add text below the gauge
         svg.append("text")
             .attr("x", boostGaugeX)
             .attr("y", boostGaugeY)
             .attr("text-anchor", "middle")
             .attr("class", "small-attribute-title-2")
             .attr("fill", "var(--color-primary-40)")
-            .text("PSI");
+            .text("BAR");
+
+        // Check if we're using default values
+        const isDefaultBoost = !(telemetryData && telemetryData.Boost !== undefined);
 
         // Extract integer and decimal parts
+        const isNegative = boostValue < 0;
         const integerPart = Math.floor(Math.abs(boostValue));
         const decimalPart = Math.abs(boostValue).toFixed(2).split('.')[1];
 
@@ -206,11 +283,19 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
         const integerContainer = svg.append("g")
             .attr("transform", `translate(${boostGaugeX}, ${boostGaugeY + 14})`);
 
-        // Calculate total width for centering
+        // Calculate total width for centering, including negative sign if
         let totalWidth = formattedInteger.length * 8;
 
         // Center the text by starting at negative half of total width
         let xOffset = -totalWidth / 2;
+
+        integerContainer.append("text")
+            .attr("x", xOffset - 8)
+            .attr("y", 0)
+            .attr("text-anchor", "middle")
+            .attr("class", "small-attribute-integer")
+            .attr("fill", isNegative ? "color-primary" : "color-primary-40")
+            .text("-");
 
         // Add each character with appropriate opacity
         formattedInteger.forEach(char => {
@@ -220,7 +305,7 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
                 .attr("text-anchor", "middle")
                 .attr("class", "small-attribute-integer")
                 .attr("fill", "var(--color-primary)")
-                .attr("opacity", char.opacity)
+                .attr("opacity", isDefaultBoost ? 0.5 : char.opacity) // Reduce opacity for default values
                 .text(char.text);
 
             xOffset += 8; // Adjust spacing for monospaced font
@@ -233,6 +318,106 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
             .attr("text-anchor", "middle")
             .attr("class", "small-attribute-decimal")
             .attr("fill", "var(--color-primary)")
+            .attr("opacity", isDefaultBoost ? 0.5 : 1) // Reduce opacity for default values
             .text(`.${decimalPart}`);
+
+        // Add horsepower display
+        // Get Power value from telemetry data (default to 0)
+        const powerField = fields.find(field => field.name === 'Power');
+        let powerValue = 0; // Default value
+        if (telemetryData && telemetryData.Power !== undefined) {
+            // Apply transform function if available
+            if (powerField && powerField.transform) {
+                powerValue = powerField.transform(telemetryData.Power);
+            } else {
+                powerValue = telemetryData.Power;
+            }
+        }
+
+        // Round to integer
+        const hpValue = Math.round(powerValue);
+
+        // Check if we're using default values
+        const isDefaultPower = !(telemetryData && telemetryData.Power !== undefined);
+
+        // Format HP with leading zeros (4 digits)
+        const formattedHP = formatNumberWithLeadingZeros(hpValue, 4);
+
+        // Create HP display container - positioned 24px below the boost value
+        const hpContainer = svg.append("g")
+            .attr("transform", `translate(${boostGaugeX}, ${boostGaugeY + boostGauge.outerRadius + 12})`);
+
+        // Add HP value
+        let hpXOffset = -16; // Center 4 digits (each 8px wide)
+
+        // Add each character with appropriate opacity
+        formattedHP.forEach(char => {
+            hpContainer.append("text")
+                .attr("x", hpXOffset)
+                .attr("y", 0)
+                .attr("text-anchor", "middle")
+                .attr("class", "small-attribute-integer")
+                .attr("fill", "var(--color-primary)")
+                .attr("opacity", isDefaultPower ? 0.5 : char.opacity)
+                .text(char.text);
+
+            hpXOffset += 8; // Adjust spacing for monospaced font
+        });
+
+        // Add "HP" label
+        hpContainer.append("text")
+            .attr("x", 16)
+            .attr("y", 0) // Position below the value
+            .attr("text-anchor", "left")
+            .attr("class", "small-attribute-title-2")
+            .attr("fill", "var(--color-primary-40)")
+            .text("HP");
+
+        // Add torque display
+        // Get Torque value from telemetry data (default to 0)
+        const torqueField = fields.find(field => field.name === 'Torque');
+        let torqueValue = 0; // Default value
+        if (telemetryData && telemetryData.Torque !== undefined) {
+            torqueValue = telemetryData.Torque;
+        }
+
+        // Round to integer
+        const nmValue = Math.round(torqueValue);
+
+        // Check if we're using default values
+        const isDefaultTorque = !(telemetryData && telemetryData.Torque !== undefined);
+
+        // Format N-M with leading zeros (4 digits)
+        const formattedNM = formatNumberWithLeadingZeros(nmValue, 4);
+
+        // Create N-M display container - positioned 8px below the HP label
+        const nmContainer = svg.append("g")
+            .attr("transform", `translate(${boostGaugeX}, ${boostGaugeY + boostGauge.outerRadius + 12 + 18})`);
+
+        // Add N-M value
+        let nmXOffset = -16; // Center 4 digits (each 8px wide)
+
+        // Add each character with appropriate opacity
+        formattedNM.forEach(char => {
+            nmContainer.append("text")
+                .attr("x", nmXOffset)
+                .attr("y", 0)
+                .attr("text-anchor", "middle")
+                .attr("class", "small-attribute-integer")
+                .attr("fill", "var(--color-primary)")
+                .attr("opacity", isDefaultTorque ? 0.5 : char.opacity)
+                .text(char.text);
+
+            nmXOffset += 8; // Adjust spacing for monospaced font
+        });
+
+        // Add "N-M" label
+        nmContainer.append("text")
+            .attr("x", 16)
+            .attr("y", 0) // Position below the value
+            .attr("text-anchor", "left")
+            .attr("class", "small-attribute-title-2")
+            .attr("fill", "var(--color-primary-40)")
+            .text("N-M");
     }
 }

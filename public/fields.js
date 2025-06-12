@@ -164,6 +164,38 @@ export default [
     "type": "readFloatLE"
 },
 
+    {"name": "SuspensionTravelMetersFl",
+        "min": -10,
+        "max": 10,
+        "offset": 196,
+        "type": "readFloatLE",
+        "transform": value => (value * 10)
+},
+
+    {"name": "SuspensionTravelMetersFr",
+        "min": -10,
+        "max": 10,
+        "offset": 200,
+        "type": "readFloatLE",
+        "transform": value => (value * 10)
+},
+
+    {"name": "SuspensionTravelMetersRl",
+        "min": -10,
+        "max": 10,
+        "offset": 204,
+        "type": "readFloatLE",
+        "transform": value => (value * 10)
+},
+
+    {"name": "SuspensionTravelMetersRr",
+        "min": -10,
+        "max": 10,
+        "offset": 208,
+        "type": "readFloatLE",
+        "transform": value => (value * 10)
+},
+
     // Tire Data
     {"name": "TireSlipRatioFl",
     "min": -10,
@@ -277,37 +309,36 @@ export default [
     "type": "readFloatLE"
 },
 
-    // Suspension Travel
-    {"name": "SuspensionTravelMetersFl",
-    "min": -10,
-    "max": 10,
-    "offset": 196,
-    "type": "readFloatLE",
-    "transform": value => value * 10
+    {"name": "TireTempFl",
+        "min": -10,
+        "max": 10,
+        "offset": 256 + bufferOffset,
+        "type": "readFloatLE",
+        "transform": value => (value - 32) * (5/9)
 },
 
-    {"name": "SuspensionTravelMetersFr",
-    "min": -10,
-    "max": 10,
-    "offset": 200,
-    "type": "readFloatLE",
-    "transform": value => value * 10
+    {"name": "TireTempFr",
+        "min": -10,
+        "max": 10,
+        "offset": 260 + bufferOffset,
+        "type": "readFloatLE",
+        "transform": value => (value - 32) * (5/9)
 },
 
-    {"name": "SuspensionTravelMetersRl",
-    "min": -10,
-    "max": 10,
-    "offset": 204,
-    "type": "readFloatLE",
-    "transform": value => value * 10
+    {"name": "TireTempRl",
+        "min": -10,
+        "max": 10,
+        "offset": 264 + bufferOffset,
+        "type": "readFloatLE",
+        "transform": value => (value - 32) * (5/9)
 },
 
-    {"name": "SuspensionTravelMetersRr",
-    "min": -10,
-    "max": 10,
-    "offset": 208,
-    "type": "readFloatLE",
-    "transform": value => value * 10
+    {"name": "TireTempRr",
+        "min": -10,
+        "max": 10,
+        "offset": 268 + bufferOffset,
+        "type": "readFloatLE",
+        "transform": value => (value - 32) * (5/9)
 },
 
     // Car Information
@@ -388,34 +419,6 @@ export default [
     "min": -10,
     "max": 10,
     "offset": 252 + bufferOffset,
-    "type": "readFloatLE"
-},
-
-    {"name": "TireTempFl",
-    "min": -10,
-    "max": 10,
-    "offset": 256 + bufferOffset,
-    "type": "readFloatLE"
-},
-
-    {"name": "TireTempFr",
-    "min": -10,
-    "max": 10,
-    "offset": 260 + bufferOffset,
-    "type": "readFloatLE"
-},
-
-    {"name": "TireTempRl",
-    "min": -10,
-    "max": 10,
-    "offset": 264 + bufferOffset,
-    "type": "readFloatLE"
-},
-
-    {"name": "TireTempRr",
-    "min": -10,
-    "max": 10,
-    "offset": 268 + bufferOffset,
     "type": "readFloatLE"
 },
 

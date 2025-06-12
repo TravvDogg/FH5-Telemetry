@@ -17,6 +17,11 @@
     --color-throttle: #3DA3F7;
     --color-steering: #4AE170;
     --color-rpm-indicator: #FF0000;
+
+    --color-warning-activation: #F67C43;
+
+    --color-boost-gauge-pos: #61D9FD;
+    --color-boost-gauge-neg: #FF0000;
 }
 
 .large-numbers {

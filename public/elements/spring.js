@@ -25,7 +25,7 @@ const springConfig = {
 /**
  * Renders a spring visualization that responds to suspension travel
  * @param {Element} svgElement - The SVG element to render into
- * @param {number} travelInput - Normalized suspension travel value (-1 to 1)
+ * @param {number} travelInput - Normalized suspension travel value (0 to 1)
  */
 export function renderSpring(svgElement, travelInput) {
     if (svgElement) {
@@ -52,11 +52,9 @@ export function renderSpring(svgElement, travelInput) {
         // Calculate compression based on travel input or use middle value as default
         let customCompression;
         if (travelInput !== undefined) {
-            const normalizedTravel = (travelInput + 1) / 2;
-
-            // Map normalized travel to compression range
+            // Map travel input (already in 0-1 range) to compression range
             customCompression = customSpring.minCompression + 
-                (customSpring.maxCompression - customSpring.minCompression) * normalizedTravel;
+                (customSpring.maxCompression - customSpring.minCompression) * travelInput;
 
             // Ensure compression is within valid range
             customCompression = Math.max(customSpring.minCompression, 
