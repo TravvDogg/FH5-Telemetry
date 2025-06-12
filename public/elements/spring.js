@@ -11,17 +11,6 @@
 const springSvgElement = document.getElementById("springSvg");
 const springSvg = springSvgElement ? d3.select("#springSvg") : null;
 
-// Default spring configuration parameters
-const springConfig = {
-    x: 50,
-    y: 15,
-    width: 10,
-    totalHeight: 170,
-    minCompression: 85,
-    maxCompression: 170,
-    coilCount: 6
-};
-
 /**
  * Renders a spring visualization that responds to suspension travel
  * @param {Element} svgElement - The SVG element to render into
@@ -31,11 +20,10 @@ export function renderSpring(svgElement, travelInput) {
     if (svgElement) {
         const customSvg = d3.select(svgElement);
 
-        // Get the SVG dimensions
         const svgWidth = parseInt(customSvg.style("width") || customSvg.attr("width"));
         const svgHeight = parseInt(customSvg.style("height") || customSvg.attr("height"));
 
-        // Create a custom spring object for this SVG
+        // Custom spring object yaya
         const customSpring = {
             x: svgWidth / 2,
             y: svgHeight * 0.1,
@@ -46,25 +34,23 @@ export function renderSpring(svgElement, travelInput) {
             coilCount: 6
         };
 
-        // Clear existing content
         customSvg.selectAll("*").remove();
 
-        // Calculate compression based on travel input or use middle value as default
+        // Calculate compression
         let customCompression;
         if (travelInput !== undefined) {
-            // Map travel input (already in 0-1 range) to compression range
             customCompression = customSpring.minCompression + 
                 (customSpring.maxCompression - customSpring.minCompression) * travelInput;
 
-            // Ensure compression is within valid range
+            // Normalise
             customCompression = Math.max(customSpring.minCompression, 
                                 Math.min(customSpring.maxCompression, customCompression));
         } else {
-            // Default to middle value if no travel input provided
+            // Default to middle
             customCompression = (customSpring.minCompression + customSpring.maxCompression) / 2;
         }
 
-        // Shock shaft (top element, compressing)
+        // Shock shaft
         customSvg.append("rect")
             .attr("x", customSpring.x - (12/2))
             .attr("y", customSpring.y + customSpring.minCompression - customSpring.minCompression)

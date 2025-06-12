@@ -46,31 +46,29 @@ export function createTelemetryUI(fields) {
  * @param {Array} fields - Array of field definitions from fields.js
  */
 export function updateTelemetryUI(data, elements, fields) {
-  // Update each UI element with corresponding data
+  // Update UI elements
   elements.forEach((el, i) => {
     const field = fields[i];
     let v = data[field.name];
 
-    // Skip if no data for this field
     if (v == null) return;
 
-    // Apply transformation if defined in the field (e.g., unit conversion)
+    // Apply transformation (optional)
     if (field.transform) {
       v = field.transform(v);
     }
 
-    // Handle numeric values differently from boolean/string values
+    // Handle numeric values
     if (typeof v === 'number') {
       // Display number with 2 decimal places
       el.valEl.textContent = v.toFixed(2);
 
-      // Update the fill bar width based on value's position in min-max range
       const pct = (v - el.min) / (el.max - el.min);
-      // Clamp percentage between 0-100%
+      // Normalise
       el.fillEl.style.width =
         Math.max(0, Math.min(1, pct)) * 100 + '%';
     } else {
-      // For boolean or string values, just display as string
+      // For boolean, just display as string
       el.valEl.textContent = String(v);
     }
   });

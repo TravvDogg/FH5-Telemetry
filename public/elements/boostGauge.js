@@ -60,7 +60,6 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
         const svgWidth = parseInt(svg.style("width") || svg.attr("width"));
         const svgHeight = parseInt(svg.style("height") || svg.attr("height"));
 
-        // Calculate the center point
         const centerX = svgWidth / 2;
         const centerY = svgHeight / 2;
 
@@ -95,7 +94,7 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
             .startAngle(boostGauge.startAngle * (Math.PI / 180))
             .endAngle(boostGauge.endAngle * (Math.PI / 180));
 
-        // Draw outer arc
+        // Outer arc
         svg.append("path")
             .attr("d", outerArc)
             .attr("transform", `translate(${boostGaugeX}, ${boostGaugeY})`)
@@ -103,7 +102,7 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
             .attr("stroke", "var(--color-primary)")
             .attr("stroke-width", boostGauge.outerStrokeWidth);
 
-        // Draw inner arc
+        // Inner arc
         svg.append("path")
             .attr("d", innerArc)
             .attr("transform", `translate(${boostGaugeX}, ${boostGaugeY})`)
@@ -152,7 +151,7 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
             .attr("stroke", "var(--color-primary)")
             .attr("stroke-width", 1);
 
-        // Add radial numbers (-4 on the left and 4 on the right)
+        // Radial numbers
         const radialNumbers = new RadialNumbers({
             startAngle: boostGauge.numberStartAngle,
             endAngle: boostGauge.numberEndAngle,
@@ -172,10 +171,10 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
 
         const boostField = fields.find(field => field.name === 'Boost');
 
-        // Get boost value from telemetry data and apply transform if available
-        let boostValue = 0; // Default value
+        // Boost
+        let boostValue = 0;
         if (telemetryData && telemetryData.Boost !== undefined) {
-            // Apply transform function if available
+            // Apply transform
             if (boostField && boostField.transform) {
                 boostValue = boostField.transform(telemetryData.Boost);
             } else {
@@ -193,8 +192,7 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
         const defs = svg.append("defs");
 
         // Create a clip path for the arc section
-        // The clip path should go from top dead center (0 degrees) to the needle position
-        const startAngleForClip = 0; // Top dead center
+        const startAngleForClip = 0; // Top
         const endAngleForClip = needleAngle;
 
         defs.append("clipPath")
@@ -208,15 +206,15 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
             )
             .attr("transform", `translate(${boostGaugeX}, ${boostGaugeY})`);
 
-        // Create a radial gradient definition to simulate a conic effect
+        // Radial gradient
         const gradient = defs.append("radialGradient")
             .attr("id", gradientId)
             .attr("gradientUnits", "userSpaceOnUse")
             .attr("cx", boostGaugeX)
             .attr("cy", boostGaugeY)
-            .attr("r", boostGauge.outerRadius * 2) // Larger radius for smoother gradient
-            .attr("fx", polarToCartesian(boostGaugeX, boostGaugeY, boostGauge.innerRadius, 0).x) // Top dead center
-            .attr("fy", polarToCartesian(boostGaugeX, boostGaugeY, boostGauge.innerRadius, 0).y) // Top dead center
+            .attr("r", boostGauge.outerRadius * 2)
+            .attr("fx", polarToCartesian(boostGaugeX, boostGaugeY, boostGauge.innerRadius, 0).x)
+            .attr("fy", polarToCartesian(boostGaugeX, boostGaugeY, boostGauge.innerRadius, 0).y)
             .attr("spreadMethod", "pad");
 
         // Start with black at 0% opacity at top dead center
@@ -246,11 +244,10 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
             .attr("clip-path", `url(#${clipPathId})`)
             .attr("stroke", "none");
 
-        // Calculate needle points
+        // Needle
         const needleBasePoint = polarToCartesian(boostGaugeX, boostGaugeY, boostGauge.innerRadius, needleAngle);
         const needleTipPoint = polarToCartesian(boostGaugeX, boostGaugeY, boostGauge.outerRadius, needleAngle);
 
-        // Draw needle
         svg.append("line")
             .attr("x1", needleBasePoint.x)
             .attr("y1", needleBasePoint.y)
@@ -259,7 +256,7 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
             .attr("stroke", boostGauge.needleColor)
             .attr("stroke-width", boostGauge.needleWidth);
 
-        // Add text below the gauge
+        // Text
         svg.append("text")
             .attr("x", boostGaugeX)
             .attr("y", boostGaugeY)
@@ -268,7 +265,7 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
             .attr("fill", "var(--color-primary-40)")
             .text("BAR");
 
-        // Check if we're using default values
+        // Check for default values
         const isDefaultBoost = !(telemetryData && telemetryData.Boost !== undefined);
 
         // Extract integer and decimal parts
@@ -276,17 +273,12 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
         const integerPart = Math.floor(Math.abs(boostValue));
         const decimalPart = Math.abs(boostValue).toFixed(2).split('.')[1];
 
-        // Format integer part with leading zeros
+        // Format
         const formattedInteger = formatNumberWithLeadingZeros(integerPart, 1);
 
-        // Create a container for the integer part
         const integerContainer = svg.append("g")
             .attr("transform", `translate(${boostGaugeX}, ${boostGaugeY + 14})`);
-
-        // Calculate total width for centering, including negative sign if
         let totalWidth = formattedInteger.length * 8;
-
-        // Center the text by starting at negative half of total width
         let xOffset = -totalWidth / 2;
 
         integerContainer.append("text")
@@ -297,7 +289,7 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
             .attr("fill", isNegative ? "color-primary" : "color-primary-40")
             .text("-");
 
-        // Add each character with appropriate opacity
+        // Characters
         formattedInteger.forEach(char => {
             integerContainer.append("text")
                 .attr("x", xOffset)
@@ -305,28 +297,27 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
                 .attr("text-anchor", "middle")
                 .attr("class", "small-attribute-integer")
                 .attr("fill", "var(--color-primary)")
-                .attr("opacity", isDefaultBoost ? 0.5 : char.opacity) // Reduce opacity for default values
+                .attr("opacity", isDefaultBoost ? 0.5 : char.opacity)
                 .text(char.text);
 
-            xOffset += 8; // Adjust spacing for monospaced font
+            xOffset += 8;
         });
 
-        // Add decimal part of PSI value right next to the integer part
+        // Decimal part
         integerContainer.append("text")
             .attr("x", xOffset + 4)
             .attr("y", 0)
             .attr("text-anchor", "middle")
             .attr("class", "small-attribute-decimal")
             .attr("fill", "var(--color-primary)")
-            .attr("opacity", isDefaultBoost ? 0.5 : 1) // Reduce opacity for default values
+            .attr("opacity", isDefaultBoost ? 0.5 : 1)
             .text(`.${decimalPart}`);
 
-        // Add horsepower display
-        // Get Power value from telemetry data (default to 0)
+        // Horsepower display
+        // Power from Telemetry
         const powerField = fields.find(field => field.name === 'Power');
-        let powerValue = 0; // Default value
+        let powerValue = 0;
         if (telemetryData && telemetryData.Power !== undefined) {
-            // Apply transform function if available
             if (powerField && powerField.transform) {
                 powerValue = powerField.transform(telemetryData.Power);
             } else {
@@ -334,23 +325,17 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
             }
         }
 
-        // Round to integer
+
         const hpValue = Math.round(powerValue);
-
-        // Check if we're using default values
         const isDefaultPower = !(telemetryData && telemetryData.Power !== undefined);
-
-        // Format HP with leading zeros (4 digits)
+        // Format with leading zeros
         const formattedHP = formatNumberWithLeadingZeros(hpValue, 4);
-
-        // Create HP display container - positioned 24px below the boost value
         const hpContainer = svg.append("g")
             .attr("transform", `translate(${boostGaugeX}, ${boostGaugeY + boostGauge.outerRadius + 12})`);
 
-        // Add HP value
-        let hpXOffset = -16; // Center 4 digits (each 8px wide)
+        let hpXOffset = -16;
 
-        // Add each character with appropriate opacity
+        // Character
         formattedHP.forEach(char => {
             hpContainer.append("text")
                 .attr("x", hpXOffset)
@@ -361,10 +346,10 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
                 .attr("opacity", isDefaultPower ? 0.5 : char.opacity)
                 .text(char.text);
 
-            hpXOffset += 8; // Adjust spacing for monospaced font
+            hpXOffset += 8;
         });
 
-        // Add "HP" label
+        // label
         hpContainer.append("text")
             .attr("x", 16)
             .attr("y", 0) // Position below the value
@@ -373,31 +358,23 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
             .attr("fill", "var(--color-primary-40)")
             .text("HP");
 
-        // Add torque display
-        // Get Torque value from telemetry data (default to 0)
+        // Torque display
         const torqueField = fields.find(field => field.name === 'Torque');
-        let torqueValue = 0; // Default value
+        let torqueValue = 0;
         if (telemetryData && telemetryData.Torque !== undefined) {
             torqueValue = telemetryData.Torque;
         }
 
-        // Round to integer
+
         const nmValue = Math.round(torqueValue);
-
-        // Check if we're using default values
         const isDefaultTorque = !(telemetryData && telemetryData.Torque !== undefined);
-
-        // Format N-M with leading zeros (4 digits)
         const formattedNM = formatNumberWithLeadingZeros(nmValue, 4);
-
-        // Create N-M display container - positioned 8px below the HP label
         const nmContainer = svg.append("g")
             .attr("transform", `translate(${boostGaugeX}, ${boostGaugeY + boostGauge.outerRadius + 12 + 18})`);
 
-        // Add N-M value
-        let nmXOffset = -16; // Center 4 digits (each 8px wide)
+        let nmXOffset = -16;
 
-        // Add each character with appropriate opacity
+        // Character
         formattedNM.forEach(char => {
             nmContainer.append("text")
                 .attr("x", nmXOffset)
@@ -408,13 +385,13 @@ export function renderBoostGauge(svgElement, telemetryData, rpmDialPosition) {
                 .attr("opacity", isDefaultTorque ? 0.5 : char.opacity)
                 .text(char.text);
 
-            nmXOffset += 8; // Adjust spacing for monospaced font
+            nmXOffset += 8;
         });
 
-        // Add "N-M" label
+        // Label
         nmContainer.append("text")
             .attr("x", 16)
-            .attr("y", 0) // Position below the value
+            .attr("y", 0)
             .attr("text-anchor", "left")
             .attr("class", "small-attribute-title-2")
             .attr("fill", "var(--color-primary-40)")

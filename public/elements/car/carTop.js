@@ -48,17 +48,13 @@ export function rendercarTop(svgElement, telemetryData) {
             // Default transformations
             let rotationAngle = 0;
 
-            // Apply telemetry data if available
             if (telemetryData) {
-                // Rotate based on angular acceleration on Y axis (yaw)
                 if (telemetryData.AngularVelocityY !== undefined) {
-                    // Scale the rotation to make it visible but not too extreme
                     rotationAngle = telemetryData.AngularVelocityY * 5;
                 }
             }
 
             // Create a group element to apply transformations
-            // Apply rotation around the center of the SVG by using the center point as the rotation origin
             const g = svg.append("g")
                 .attr("transform", `translate(${translateX}, ${translateY}) scale(${scale}) rotate(${rotationAngle}, ${originalWidth/2}, ${originalHeight/2})`);
 

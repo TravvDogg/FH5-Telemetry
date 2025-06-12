@@ -49,17 +49,14 @@ export function rendercarSide(svgElement, telemetryData) {
             let moveX = 0;
             let rotationAngle = 0;
 
-            // Apply telemetry data if available
             if (telemetryData) {
-                // Move forward/back based on Acceleration
+                // Forward / backward movement
                 if (telemetryData.AccelerationZ !== undefined) {
-                    // Scale the movement
                     moveX = telemetryData.AccelerationZ * 2;
                 }
 
-                // Rotate based on angular acceleration
+                // Rotation
                 if (telemetryData.AngularVelocityX !== undefined) {
-                    // Scale the rotation
                     rotationAngle = -telemetryData.AngularVelocityX * 5;
                 }
             }

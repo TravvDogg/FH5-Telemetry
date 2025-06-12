@@ -9,7 +9,7 @@
 \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ */
 
 ;(async function(){
-  // Import field definitions from the server
+  // import field definitions from the server
   const module = await import('/fields.js');
   const fields = module.default;
 
@@ -37,13 +37,12 @@
      });
   });
 
-  // Create WebSocket connection to receive telemetry data
-  // Port 8765 matches the WS_PORT defined in server.js
+  // Create WebSocket connection
   const ws = new WebSocket(`ws://${location.hostname}:8765`);
 
-  // Handle incoming WebSocket messages
+  // Handle WebSocket messages
   ws.onmessage = e => {
-    // Parse the JSON data from the server
+    // Parse the JSON data
     const data = JSON.parse(e.data);
 
     // Update each UI element with the corresponding telemetry data
@@ -51,26 +50,24 @@
       const field = fields[i];
       let v = data[field.name];
 
-      // Skip if no data for this field
+      // Skip if no data
       if (v == null) return;
 
-      // Apply transformation (if defined)
+      // Apply transformation
       if (field.transform) {
         v = field.transform(v);
       }
 
-      // Handle numeric values differently from boolean/string values
+      // Handle numeric values
       if (typeof v === 'number') {
         // Display number with 2 decimal places
         el.valEl.textContent = v.toFixed(2);
-
-        // Update the fill bar width based on value's position in min-max range
         const pct = (v - el.min) / (el.max - el.min);
-        // Clamp percentage between 0-100%
+        // Normalise
         el.fillEl.style.width =
           Math.max(0, Math.min(1, pct)) * 100 + '%';
       } else {
-        // For boolean or string values, just display as string
+        // For boolean, just display as string
         el.valEl.textContent = String(v);
       }
     });

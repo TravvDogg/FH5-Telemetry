@@ -27,7 +27,7 @@ export function formatNumberWithLeadingZeros(value, digits, useComma = false) {
     for (let i = 0; i < valueStr.length; i++) {
         // If using comma and this is position 2 (after first two digits)
         if (useComma && i === 2) {
-            // Get the opacity of the previous digit (the leading zero to the left)
+            // Get the opacity of the previous digit (leading zero)
             const prevOpacity = (i < valueStr.length - intValue.toString().length) ? 0.4 : 1;
             result.push({
                 text: ',',
@@ -38,7 +38,7 @@ export function formatNumberWithLeadingZeros(value, digits, useComma = false) {
         // Add the digit
         result.push({
             text: valueStr[i],
-            // If this is a leading zero, set opacity to 0.4
+            // Check if this is a leading zero
             opacity: (i < valueStr.length - intValue.toString().length) ? 0.4 : 1
         });
     }
@@ -55,7 +55,6 @@ export function formatNumberWithLeadingZeros(value, digits, useComma = false) {
  * @param {string} suffix - Optional suffix to display (e.g., "CM", "KM/H")
  */
 export function createFormattedNumberDisplay(container, value, integerDigits, decimalDigits, suffix = '') {
-    // Clear the container
     container.innerHTML = '';
 
     // Create a container for the value display
@@ -63,20 +62,20 @@ export function createFormattedNumberDisplay(container, value, integerDigits, de
     valueContainer.className = 'value-container';
     container.appendChild(valueContainer);
 
-    // Calculate integer and decimal parts
+    // Integer and decimal parts
     const absoluteValue = Math.abs(value);
     const integerPart = Math.floor(absoluteValue);
     const decimalPart = Math.round((absoluteValue - integerPart) * Math.pow(10, decimalDigits));
 
-    // Create the integer part
+    // Integer part
     const integerElement = document.createElement('div');
     integerElement.className = 'large-attribute-integer';
     valueContainer.appendChild(integerElement);
 
-    // Format integer part with leading zeros at 40% opacity using the utility function
+    // Format integer part
     const formattedInteger = formatNumberWithLeadingZeros(integerPart, integerDigits);
 
-    // Add each character with appropriate opacity
+    // Character
     formattedInteger.forEach(character => {
         const span = document.createElement('span');
         span.textContent = character.text;
@@ -84,21 +83,22 @@ export function createFormattedNumberDisplay(container, value, integerDigits, de
         integerElement.appendChild(span);
     });
 
-    // Create the decimal point
+    // Decimal part
     if (decimalDigits > 0) {
+        // Decimal Point
         const decimalPointElement = document.createElement('div');
         decimalPointElement.className = 'large-attribute-decimal';
         decimalPointElement.textContent = '.';
         valueContainer.appendChild(decimalPointElement);
 
-        // Create the decimal part
+        // Decimal part
         const decimalPartElement = document.createElement('div');
         decimalPartElement.className = 'large-attribute-decimal';
         decimalPartElement.textContent = decimalPart.toString().padStart(decimalDigits, '0');
         valueContainer.appendChild(decimalPartElement);
     }
 
-    // Create the suffix if provided
+    // Create suffix if provided
     if (suffix) {
         const suffixElement = document.createElement('div');
         suffixElement.className = 'suffix-bottom-right';

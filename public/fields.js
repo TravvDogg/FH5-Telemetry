@@ -13,7 +13,7 @@ const bufferOffset = 12
  * Field definitions for Forza Horizon 5 telemetry data
  * Each field has:
  * - name: The name of the telemetry value
- * - min/max: The expected value range (used for debug visualization)
+ * - min/max: The expected value range (for debug visualization)
  * - offset: The byte offset in the UDP packet
  * - type: The data type/reader function to use
  * - transform (optional): Function to transform the raw value

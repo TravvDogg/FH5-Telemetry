@@ -16,7 +16,7 @@
     background-color: var(--color-background);
 }
 
-/* Developer button */
+/* Dev button */
 #dev-button {
     position: fixed;
     top: 10px;
@@ -81,27 +81,27 @@
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 1; /* Ensure it's below the boost gauge and G-force gauge */
+    z-index: 1;
 }
 
 #boostGaugeSvg {
     position: absolute;
     top: 0;
-    left: 0; /* Start from the left edge like the other gauges */
-    width: 100%; /* Take up the full width like the other gauges */
+    left: 0;
+    width: 100%;
     height: 100%;
-    pointer-events: none; /* Allow clicks to pass through to elements below */
-    z-index: 5; /* Ensure it's above the RPM dial but below the G-force gauge */
+    pointer-events: none;
+    z-index: 5;
 }
 
 #gForceGaugeSvg {
     position: absolute;
     top: 0;
-    left: 0; /* Start from the left edge like the other gauges */
-    width: 100%; /* Take up the full width like the other gauges */
+    left: 0;
+    width: 100%;
     height: 100%;
-    pointer-events: none; /* Allow clicks to pass through to elements below */
-    z-index: 10; /* Ensure it's above other elements */
+    pointer-events: none;
+    z-index: 10; /* Above other elements */
 }
 
 /* Small grid styles */
@@ -210,5 +210,3 @@
     display: flex;
     align-items: baseline;
 }
-
-/* Note: Text styles are imported from style.css */

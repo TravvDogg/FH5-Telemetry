@@ -49,14 +49,13 @@ export class RadialNumbers {
         const numberCount = numbers.length;
 
         for (let i = 0; i < numberCount; i++) {
-            // Calculate angle for this number
             const angle = this.startAngle + (i / (numberCount - 1)) * (this.endAngle - this.startAngle);
 
-            // Calculate position for the number
+            // Calculate position
             const numberRadius = this.outerRadius - this.outerStrokeWidth - this.numberOffset;
             const numberPoint = polarToCartesian(centerX, centerY, numberRadius, angle);
 
-            // Add the number
+            // Add number
             svg.append("text")
                 .attr("x", numberPoint.x)
                 .attr("y", numberPoint.y)

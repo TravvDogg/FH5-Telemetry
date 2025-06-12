@@ -16,32 +16,32 @@ import { rendercarTop as renderCarTop } from './car/carTop.js';
  * @param {HTMLElement} gridItem - The grid item to create the car layout in
  */
 export function createCarLayout(gridItem) {
-  // Create a container for the car layout
+  // Container
   const carLayoutContainer = document.createElement('div');
   carLayoutContainer.className = 'car-layout-container';
   gridItem.appendChild(carLayoutContainer);
 
-  // Create left side container (will be split vertically)
+  // Left side container
   const leftContainer = document.createElement('div');
   leftContainer.className = 'car-left-container';
   carLayoutContainer.appendChild(leftContainer);
 
-  // Create right side container (for carTop)
+  // Right side container
   const rightContainer = document.createElement('div');
   rightContainer.className = 'car-right-container';
   carLayoutContainer.appendChild(rightContainer);
 
-  // Create top half of left container (for carFront)
+  // Top half of left container
   const topHalfContainer = document.createElement('div');
   topHalfContainer.className = 'car-top-half-container';
   leftContainer.appendChild(topHalfContainer);
 
-  // Create bottom half of left container (for carSide)
+  // Bottom half of left container
   const bottomHalfContainer = document.createElement('div');
   bottomHalfContainer.className = 'car-bottom-half-container';
   leftContainer.appendChild(bottomHalfContainer);
 
-  // Create SVG elements for each view
+  // SVG elements
   // carFront SVG (top half of left side)
   const carFrontSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   carFrontSvg.setAttribute('width', '100%');
@@ -72,7 +72,6 @@ export function createCarLayout(gridItem) {
  * @param {Object} data - Telemetry data
  */
 export function updateCarLayout(data) {
-  // Only update if we have the necessary telemetry data
   if (data.AccelerationZ !== undefined || data.AngularVelocityX !== undefined) {
     const carSideSvg = document.getElementById('carSide-svg');
     if (carSideSvg) renderCarSide(carSideSvg, data);

@@ -4,6 +4,7 @@
 ------------------------------------------------------------------------
         rpmDial.js: 
           Renders an RPM dial visualization
+          Probably too long for one script
 ------------------------------------------------------------------------
 \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ */
 
@@ -11,11 +12,11 @@ import { formatNumberWithLeadingZeros } from './numberUtils.js';
 import { RadialNumbers } from './radialNumbers.js';
 import { polarToCartesian } from './geometryUtils.js';
 import { getCachedAlertSvg } from './alertSvgCache.js';
+import { tire } from './tire.js';
 
 const rpmDialSvgElement = document.getElementById("rpmDialSvg");
 const rpmDialSvg = rpmDialSvgElement ? d3.select("#rpmDialSvg") : null;
 
-// Configuration parameters for RPM dial visualization
 const arcSpaceDegrees = 90;
 const arcStartDegrees = (-180 + (arcSpaceDegrees / 2));
 const arcEndDegrees = (90 + (arcSpaceDegrees / 2));
@@ -24,23 +25,23 @@ const rpmDial = {
     innerRadius: 95,       // Radius of the inner arc
     outerStrokeWidth: 2,   // Stroke width of the outer arc
     innerStrokeWidth: 1,   // Stroke width of the inner arc
-    startAngle: arcStartDegrees,       // 45 degrees left of bottom (180 + 45)
-    endAngle: arcEndDegrees,         // 45 degrees right of bottom (360 - 45)
+    startAngle: arcStartDegrees,
+    endAngle: arcEndDegrees,
     numberOffset: 8,       // Distance from inner arc to numbers in px
-    numberStartAngle: arcStartDegrees + 5, // 50 degrees left of bottom (180 + 50)
-    numberEndAngle: arcEndDegrees - 5,    // 50 degrees right of bottom (360 - 50)
+    numberStartAngle: arcStartDegrees + 5,
+    numberEndAngle: arcEndDegrees - 5,
     gearCircleRadius: 30,  // Radius of the gear indication circle
     gearCircleStrokeWidth: 4, // Stroke width of the gear indication circle
-    yOffset: 12,           // Vertical offset to raise the dial (except speed and KMH)
+    yOffset: 12,           // Vertical offset to raise the dial (except speed and "KMH")
 
-    // Configuration for brake, throttle, and steering arcs
+    // brake, throttle, and steering arcs
     brakeThrottleArcAngle: 55,  // Angle of the brake and throttle arcs in degrees
     steeringArcAngle: 90,       // Angle of the steering arc in degrees
-    controlArcOuterRadius: 155, // Outer radius of the control arcs (outerRadius + 12)
-    controlArcInnerRadius: 148,  // Inner radius of the control arcs (innerRadius + 3)
+    controlArcOuterRadius: 155, // Outer radius of the control arcs
+    controlArcInnerRadius: 148,  // Inner radius of the control arcs
     controlArcStrokeWidth: 1,   // Stroke width of the control arcs
 
-    // Configuration for indicator circles
+    // indicator circles
     indicatorCircles: {
         count: 8,              // Number of indicator circles
         radius: 17,            // Radius of each indicator circle
@@ -50,7 +51,7 @@ const rpmDial = {
         activeFill: "var(--color-warning-activation)"  // Fill color when activated
     },
 
-    // Colors for the control arcs
+    // Colors for control arcs
     brakeColor: "var(--color-brake)",      // Red color for brake arc
     throttleColor: "var(--color-throttle)",   // Blue color for throttle arc
     steeringColor: "var(--color-steering)"    // Green color for steering arc
@@ -70,18 +71,15 @@ export function renderRpmDial(svgElement, telemetryData) {
     if (svgElement) {
         const svg = d3.select(svgElement);
 
-        // Get the SVG dimensions
         const svgWidth = parseInt(svg.style("width") || svg.attr("width"));
         const svgHeight = parseInt(svg.style("height") || svg.attr("height"));
 
-        // Calculate the center point (horizontally centered, bottom aligned)
         const centerX = svgWidth / 2;
         const centerY = svgHeight - rpmDial.outerRadius;
 
-        // Create a separate centerY for the dial (raised by yOffset)
+        // Create a separate centerY for the dial
         const dialCenterY = centerY - rpmDial.yOffset;
 
-        // Clear existing content
         svg.selectAll("*").remove();
 
         // Create arc generators
@@ -97,7 +95,7 @@ export function renderRpmDial(svgElement, telemetryData) {
             .startAngle(rpmDial.startAngle * (Math.PI / 180))
             .endAngle(rpmDial.endAngle * (Math.PI / 180));
 
-        // Draw outer arc
+        // Outer arc
         svg.append("path")
             .attr("d", outerArc)
             .attr("transform", `translate(${centerX}, ${dialCenterY})`)
@@ -105,7 +103,7 @@ export function renderRpmDial(svgElement, telemetryData) {
             .attr("stroke", "var(--color-primary)")
             .attr("stroke-width", rpmDial.outerStrokeWidth);
 
-        // Draw inner arc
+        // Inner arc
         svg.append("path")
             .attr("d", innerArc)
             .attr("transform", `translate(${centerX}, ${dialCenterY})`)
@@ -113,7 +111,7 @@ export function renderRpmDial(svgElement, telemetryData) {
             .attr("stroke", "var(--color-secondary)")
             .attr("stroke-width", rpmDial.innerStrokeWidth);
 
-        // Draw connecting lines
+        // Connecting lines
         // Start line
         const startOuterPoint = polarToCartesian(centerX, dialCenterY, rpmDial.outerRadius, rpmDial.startAngle);
         const startInnerPoint = polarToCartesian(centerX, dialCenterY, rpmDial.innerRadius, rpmDial.startAngle);
@@ -138,8 +136,8 @@ export function renderRpmDial(svgElement, telemetryData) {
             .attr("stroke", "var(--color-secondary)")
             .attr("stroke-width", rpmDial.innerStrokeWidth);
 
-        // Add RPM numbers
-        let engineMaxRpm = 10000; // Default value
+        // RPM numbers
+        let engineMaxRpm = 10000;
         if (telemetryData && telemetryData.EngineMaxRpm) {
             engineMaxRpm = telemetryData.EngineMaxRpm;
         }
@@ -159,29 +157,29 @@ export function renderRpmDial(svgElement, telemetryData) {
             outerStrokeWidth: rpmDial.outerStrokeWidth
         });
 
-        // Render the numbers
+        // Render numbers
         radialNumbers.renderNumbers(svg, centerX, dialCenterY, numbers, {
             cssClass: "small-attribute-decimal",
             isDefault: false
         });
 
-        // Add current RPM indicator (with default if telemetry data is unavailable)
+        // Current RPM
         const currentRpm = (telemetryData && telemetryData.CurrentEngineRpm !== undefined) 
             ? telemetryData.CurrentEngineRpm 
             : 0;
 
-        // Calculate the exact ratio based on the current RPM and max RPM
+        // Calculate the ratio based on the current RPM and max RPM
         const rpmRatio = currentRpm / (maxRpmThousands * 1000);
         const indicatorAngle = rpmDial.startAngle + rpmRatio * (rpmDial.endAngle - rpmDial.startAngle);
 
-        // Create a conic gradient from start to needle position
+        // Conic gradient from start to needle position
         const gradientId = "rpmDialGradient";
         const clipPathId = "rpmDialClipPath";
 
-        // Create defs section for gradient and clip path
+        // defs section for gradient and clip path
         const defs = svg.append("defs");
 
-        // Create a clip path for the arc section
+        // Clip path for the arc section
         defs.append("clipPath")
             .attr("id", clipPathId)
             .append("path")
@@ -193,7 +191,7 @@ export function renderRpmDial(svgElement, telemetryData) {
             )
             .attr("transform", `translate(${centerX}, ${dialCenterY})`);
 
-        // Create a conic gradient definition using SVG's radial gradient to simulate a conic effect
+        // Conic gradient
         const gradient = defs.append("radialGradient")
             .attr("id", gradientId)
             .attr("gradientUnits", "userSpaceOnUse")
@@ -219,7 +217,6 @@ export function renderRpmDial(svgElement, telemetryData) {
             .attr("stop-color", "white")
             .attr("stop-opacity", "1");
 
-        // Create a full circle for the gradient fill that will be clipped
         const gradientCircle = svg.append("circle")
             .attr("cx", centerX)
             .attr("cy", dialCenterY)
@@ -228,7 +225,7 @@ export function renderRpmDial(svgElement, telemetryData) {
             .attr("clip-path", `url(#${clipPathId})`)
             .attr("stroke", "none");
 
-        // Draw indicator line
+        // Indicator line
         const indicatorInnerPoint = polarToCartesian(centerX, dialCenterY, rpmDial.innerRadius, indicatorAngle);
         const indicatorOuterPoint = polarToCartesian(centerX, dialCenterY, rpmDial.outerRadius, indicatorAngle);
 
@@ -240,7 +237,7 @@ export function renderRpmDial(svgElement, telemetryData) {
             .attr("stroke", "var(--color-rpm-indicator)")
             .attr("stroke-width", 2);
 
-        // Add gear indication circle in the middle of the large arc
+        // Add gear indication circle
         svg.append("circle")
             .attr("cx", centerX)
             .attr("cy", dialCenterY)
@@ -250,7 +247,7 @@ export function renderRpmDial(svgElement, telemetryData) {
             .attr("stroke-width", rpmDial.gearCircleStrokeWidth)
             .attr("stroke-location", "inside");
 
-        // Add gear text in the middle of the circle
+        // Gear text
         let gearText = "0";
         let isDefaultGear = true;
 
@@ -268,36 +265,32 @@ export function renderRpmDial(svgElement, telemetryData) {
             .attr("fill", "var(--color-primary)")
             .text(gearText);
 
-        // Draw the 8 indicator circles evenly spaced between gear circle and inner radius
+        // Warning indicators
         const circleRadius = rpmDial.indicatorCircles.radius;
         const circleCount = rpmDial.indicatorCircles.count;
         const circleDistance = (rpmDial.innerRadius - rpmDial.gearCircleRadius - circleRadius * 2) / 2;
         const circleOrbitRadius = rpmDial.gearCircleRadius + circleDistance + circleRadius;
 
-        // Create a group for all indicator circles
         const indicatorCirclesGroup = svg.append("g")
             .attr("transform", `translate(${centerX}, ${dialCenterY})`)
             .attr("id", "indicator-circles-group");
 
-        // Calculate the angular offset needed to prevent circles from extending beyond the arc edges
+        // Calculate angular offset to prevent circles from spilling over edges
         const circleRadiusAngle = Math.atan2(circleRadius, circleOrbitRadius) * (180 / Math.PI);
 
-        // Adjust the start and end angles to account for the circle radius
+        // Adjust start and end angles
         const adjustedStartAngle = rpmDial.startAngle + circleRadiusAngle;
         const adjustedEndAngle = rpmDial.endAngle - circleRadiusAngle;
 
-        // Calculate the effective angle range for positioning the circles
+        // Effective angle range for positioning the circles
         const effectiveAngleRange = adjustedEndAngle - adjustedStartAngle;
 
         // Draw each indicator circle
         for (let i = 0; i < circleCount; i++) {
-            // Calculate angle for this circle (evenly distributed along the adjusted arc)
             let angle;
             if (circleCount === 1) {
-                // If there's only one circle, place it in the middle
                 angle = (adjustedStartAngle + effectiveAngleRange / 2) * (Math.PI / 180);
             } else {
-                // Otherwise, distribute evenly along the adjusted arc
                 angle = (adjustedStartAngle + (i * (effectiveAngleRange / (circleCount - 1)))) * (Math.PI / 180);
             }
 
@@ -305,51 +298,49 @@ export function renderRpmDial(svgElement, telemetryData) {
             const x = Math.sin(angle) * circleOrbitRadius;
             const y = -Math.cos(angle) * circleOrbitRadius;
 
-            // Determine if this circle should be active based on telemetry data
-            // This is a placeholder - actual activation logic will depend on specific requirements
-            let isActive = false;
+            let isActive = false; // Default
 
-            // Activation logic based on the specified requirements
+            // Activation logic
             if (telemetryData) {
                 switch(i) {
-                    case 0: // Circle 1: none (no activation)
+                    case 0:
                         isActive = false;
                         break;
-                    case 1: // Circle 2: any suspension bottom out (any suspensiontravelnorm at 1)
+                    case 1: // Circle 2: suspension bottom out (any suspensiontravelnorm at 1)
                         isActive = telemetryData.NormSuspensionTravelFl === 1 ||
                                   telemetryData.NormSuspensionTravelFr === 1 ||
                                   telemetryData.NormSuspensionTravelRl === 1 ||
                                   telemetryData.NormSuspensionTravelRr === 1;
                         break;
-                    case 2: // Circle 3: none (no activation)
+                    case 2:
                         isActive = false;
                         break;
-                    case 3: // Circle 4: any wheel off ground (indicated by any wheel's combinedSlip == 0)
+                    case 3: // Circle 4: wheel off ground (any combinedSlip == 0)
                         isActive = telemetryData.TireCombinedSlipFl === 0 ||
                                   telemetryData.TireCombinedSlipFr === 0 ||
                                   telemetryData.TireCombinedSlipRl === 0 ||
                                   telemetryData.TireCombinedSlipRr === 0;
                         break;
-                    case 4: // Circle 5: any wheel loss of traction (indicated by any wheels combinedSlip >= maxSlipRatio)
-                        const maxSlipRatio = 2; // Value from tire.js
+                    case 4: // Circle 5: loss of traction (any combinedSlip >= maxSlipRatio)
+                        const maxSlipRatio = tire.maxSlipRatio;
                         isActive = telemetryData.TireCombinedSlipFl >= maxSlipRatio ||
                                   telemetryData.TireCombinedSlipFr >= maxSlipRatio ||
                                   telemetryData.TireCombinedSlipRl >= maxSlipRatio ||
                                   telemetryData.TireCombinedSlipRr >= maxSlipRatio;
                         break;
-                    case 5: // Circle 6: none (no activation)
+                    case 5:
                         isActive = false;
                         break;
-                    case 6: // Circle 7: handbrake (any value above 0 from Handbrake telemetry)
+                    case 6: // Circle 7: handbrake (any value above 0 for Handbrake)
                         isActive = telemetryData.Handbrake > 0;
                         break;
-                    case 7: // Circle 8: none (no activation)
+                    case 7:
                         isActive = false;
                         break;
                 }
             }
 
-            // Draw the circle
+            // draw Circle
             indicatorCirclesGroup.append("circle")
                 .attr("cx", x)
                 .attr("cy", y)
@@ -358,23 +349,22 @@ export function renderRpmDial(svgElement, telemetryData) {
                 .attr("stroke", rpmDial.indicatorCircles.strokeColor)
                 .attr("stroke-width", rpmDial.indicatorCircles.strokeWidth);
 
-            // Create a group for this indicator's SVG content
+            // Group for this indicator's SVG content
             const svgContentGroup = indicatorCirclesGroup.append("g")
                 .attr("transform", `translate(${x}, ${y})`)
                 .attr("class", "indicator-svg-content")
                 .attr("data-indicator-index", i);
 
             // Add SVG content inside the circle based on the indicator index
-            // Determine which SVG to use for this indicator
             let svgType;
             switch(i) {
-                case 0: // Circle 1: none
+                case 0:
                     svgType = "none";
                     break;
                 case 1: // Circle 2: suspension bottom out
                     svgType = "suspension";
                     break;
-                case 2: // Circle 3: none
+                case 2:
                     svgType = "none";
                     break;
                 case 3: // Circle 4: wheel off ground
@@ -383,13 +373,13 @@ export function renderRpmDial(svgElement, telemetryData) {
                 case 4: // Circle 5: wheel loss of traction
                     svgType = "slip";
                     break;
-                case 5: // Circle 6: none
+                case 5:
                     svgType = "none";
                     break;
                 case 6: // Circle 7: handbrake
                     svgType = "handbrake";
                     break;
-                case 7: // Circle 8: none
+                case 7:
                     svgType = "none";
                     break;
             }
@@ -416,7 +406,7 @@ export function renderRpmDial(svgElement, telemetryData) {
                 });
 
                 // Calculate the center offset based on the original dimensions and scale
-                // Apply scale first, then translation to ensure proper centering
+                // Apply scale first, then translation
                 const svgGroup = svgContentGroup.append("g")
                     .attr("transform", `scale(${scale}) translate(${-originalWidth / 2}, ${-originalHeight / 2})`);
 
@@ -427,15 +417,13 @@ export function renderRpmDial(svgElement, telemetryData) {
                     }
                 });
             } else {
-                // If SVG is not cached yet (should not happen if preloaded correctly),
-                // show a simple placeholder
                 svgContentGroup.append("circle")
                     .attr("r", 10)
                     .attr("fill", isActive ? rpmDial.indicatorCircles.activeFill : rpmDial.indicatorCircles.defaultFill);
             }
         }
 
-        // Add "RPM" text below the gear circle
+        // Add "RPM" text
         svg.append("text")
             .attr("x", centerX)
             .attr("y", dialCenterY + rpmDial.gearCircleRadius + 12)
@@ -448,10 +436,10 @@ export function renderRpmDial(svgElement, telemetryData) {
         const rightEdge = centerX + rpmDial.outerRadius;
         const topEdge = dialCenterY - rpmDial.outerRadius;
 
-        // Add RPM value below the "RPM" text (with default if telemetry data is unavailable)
+        // RPM value
         const rpmValue = (telemetryData && telemetryData.CurrentEngineRpm !== undefined) 
             ? Math.floor(telemetryData.CurrentEngineRpm) 
-            : 0; // Default value of 0
+            : 0;
 
         const isDefaultRpm = !(telemetryData && telemetryData.CurrentEngineRpm !== undefined);
         const formattedRpm = formatNumberWithLeadingZeros(rpmValue, 5, true);
@@ -463,11 +451,11 @@ export function renderRpmDial(svgElement, telemetryData) {
         // Calculate total width for centering
         let totalWidth = 0;
         formattedRpm.forEach(char => {
-            // Use less space for comma (-2px on each side)
+            // Use less space for comma
             totalWidth += (char.text === ',') ? 4 : 8;
         });
 
-        // Center the text by starting at negative half of total width
+        // Center text
         let xOffset = -totalWidth / 2;
 
         formattedRpm.forEach(char => {
@@ -480,25 +468,24 @@ export function renderRpmDial(svgElement, telemetryData) {
                 .attr("opacity", char.opacity)
                 .text(char.text);
 
-            // Use less space for comma (-2px on each side)
-            xOffset += (char.text === ',') ? 5 : 8; // Adjust spacing for monospaced font
+            // Use less space for comma
+            xOffset += (char.text === ',') ? 5 : 8;
         });
 
-        // Add speed display at the bottom of the circle (with default if telemetry data is unavailable)
-        // Apply transformation to convert to km/h (multiply by 3.6)
+        // Speed display at the bottom of the circle
         const speedValue = (telemetryData && telemetryData.Speed !== undefined) 
             ? Math.floor(Math.abs(telemetryData.Speed * 3.6)) 
-            : 0; // Default value of 0
+            : 0;
 
         const isDefaultSpeed = !(telemetryData && telemetryData.Speed !== undefined);
         const formattedSpeed = formatNumberWithLeadingZeros(speedValue, 3);
 
-        // Create a container for the speed value
+        // Create a container for speed value
         const speedContainer = svg.append("g")
             .attr("transform", `translate(${centerX}, ${centerY})`);
 
-        // Add each character with appropriate opacity
-        xOffset = (-formattedSpeed.length * 25) + 25; // Center the text
+        // Add each character
+        xOffset = (-formattedSpeed.length * 25) + 25;
 
         formattedSpeed.forEach(char => {
             speedContainer.append("text")
@@ -506,15 +493,15 @@ export function renderRpmDial(svgElement, telemetryData) {
                 .attr("y", rpmDial.outerRadius - 8)
                 .attr("text-anchor", "middle")
                 .attr("class", "speed")
-                .attr("style", "font-family: 'Lekton', monospace;") // Ensure monospaced font
+                .attr("style", "font-family: 'Lekton', monospace;")
                 .attr("fill", "var(--color-primary)")
                 .attr("opacity", char.opacity)
                 .text(char.text);
 
-            xOffset += 50; // Adjust spacing for monospaced font
+            xOffset += 50;
         });
 
-        // Add "KM/H" text to the right of the speed value
+        // "KM/H" text next to numbers
         speedContainer.append("text")
             .attr("x", xOffset - 25)
             .attr("y", rpmDial.outerRadius - 18)
@@ -524,19 +511,18 @@ export function renderRpmDial(svgElement, telemetryData) {
             .attr("fill", "var(--color-primary-40)")
             .text("KM/H");
 
-        // ===== BRAKE ARC (LEFT SIDE) =====
         // Calculate angles for the brake arc
         const brakeStartAngle = rpmDial.startAngle;
         const brakeEndAngle = brakeStartAngle + rpmDial.brakeThrottleArcAngle;
 
-        // Create brake arc generator
+        // Brake arc
         const brakeArc = d3.arc()
             .innerRadius(rpmDial.controlArcInnerRadius)
             .outerRadius(rpmDial.controlArcOuterRadius)
             .startAngle(brakeStartAngle * (Math.PI / 180))
             .endAngle(brakeEndAngle * (Math.PI / 180));
 
-        // Draw brake arc outline
+        // Brake arc outline
         svg.append("path")
             .attr("d", brakeArc)
             .attr("transform", `translate(${centerX}, ${dialCenterY})`)
@@ -544,7 +530,7 @@ export function renderRpmDial(svgElement, telemetryData) {
             .attr("stroke", "var(--color-primary)")
             .attr("stroke-width", rpmDial.controlArcStrokeWidth);
 
-        // Add "BRK" text at the bottom of the brake arc
+        // "BRK" text (brake)
         const brakeTextPoint = polarToCartesian(centerX, dialCenterY, rpmDial.controlArcOuterRadius + 10, brakeStartAngle);
         svg.append("text")
             .attr("x", brakeTextPoint.x)
@@ -556,15 +542,14 @@ export function renderRpmDial(svgElement, telemetryData) {
             .attr("transform", `rotate(${brakeStartAngle - 177}, ${brakeTextPoint.x}, ${brakeTextPoint.y})`)
             .text("BRK");
 
-        // Draw filled brake arc (with default if telemetry data is unavailable)
+        // Brake input indicator arc
         const brakeValue = (telemetryData && telemetryData.Brake !== undefined) 
             ? telemetryData.Brake 
-            : 0; // Default value of 0
+            : 0;
 
         const isDefaultBrake = !(telemetryData && telemetryData.Brake !== undefined);
         const brakeRatio = -brakeValue / 255;
 
-        // For default value, show a small indicator
         const filledBrakeEndAngle = brakeStartAngle - (brakeRatio * (isDefaultBrake ? 5 : rpmDial.brakeThrottleArcAngle));
 
         const filledBrakeArc = d3.arc()
@@ -580,19 +565,18 @@ export function renderRpmDial(svgElement, telemetryData) {
             .attr("opacity", isDefaultBrake ? 0.5 : 1) // Reduce opacity for default values
             .attr("stroke", "none");
 
-        // ===== THROTTLE ARC (RIGHT SIDE) =====
         // Calculate angles for the throttle arc
         const throttleStartAngle = rpmDial.endAngle;
         const throttleEndAngle = throttleStartAngle - rpmDial.brakeThrottleArcAngle;
 
-        // Create throttle arc generator
+        // Throttle arc
         const throttleArc = d3.arc()
             .innerRadius(rpmDial.controlArcInnerRadius)
             .outerRadius(rpmDial.controlArcOuterRadius)
             .startAngle(throttleStartAngle * (Math.PI / 180))
             .endAngle(throttleEndAngle * (Math.PI / 180));
 
-        // Draw throttle arc outline
+        // Throttle arc outline
         svg.append("path")
             .attr("d", throttleArc)
             .attr("transform", `translate(${centerX}, ${dialCenterY})`)
@@ -600,7 +584,7 @@ export function renderRpmDial(svgElement, telemetryData) {
             .attr("stroke", "var(--color-primary)")
             .attr("stroke-width", rpmDial.controlArcStrokeWidth);
 
-        // Add "THR" text at the bottom of the throttle arc
+        // "THR" text (throttle)
         const throttleTextPoint = polarToCartesian(centerX, dialCenterY, rpmDial.controlArcOuterRadius + 10, throttleStartAngle);
         svg.append("text")
             .attr("x", throttleTextPoint.x)
@@ -612,10 +596,10 @@ export function renderRpmDial(svgElement, telemetryData) {
             .attr("transform", `rotate(${throttleStartAngle - 183}, ${throttleTextPoint.x}, ${throttleTextPoint.y})`)
             .text("THR");
 
-        // Draw filled throttle arc (with default if telemetry data is unavailable)
+        // Throttle input indicator arc
         const throttleValue = (telemetryData && telemetryData.Throttle !== undefined) 
             ? -telemetryData.Throttle 
-            : 0; // Default value of 0
+            : 0;
 
         const isDefaultThrottle = !(telemetryData && telemetryData.Throttle !== undefined);
         const throttleRatio = throttleValue / 255;
@@ -636,20 +620,19 @@ export function renderRpmDial(svgElement, telemetryData) {
             .attr("opacity", isDefaultThrottle ? 0.5 : 1) // Reduce opacity for default values
             .attr("stroke", "none");
 
-        // ===== STEERING ARC (TOP) =====
-        // Calculate angles for the steering arc
-        const steeringCenterAngle = 0; // Top of the circle
+        // Calculate angles for steering arc
+        const steeringCenterAngle = 0;
         const steeringStartAngle = steeringCenterAngle - (rpmDial.steeringArcAngle / 2);
         const steeringEndAngle = steeringCenterAngle + (rpmDial.steeringArcAngle / 2);
 
-        // Create steering arc generator
+        // Steering arc generator
         const steeringArc = d3.arc()
             .innerRadius(rpmDial.controlArcInnerRadius)
             .outerRadius(rpmDial.controlArcOuterRadius)
             .startAngle(steeringStartAngle * (Math.PI / 180))
             .endAngle(steeringEndAngle * (Math.PI / 180));
 
-        // Draw steering arc outline
+        // Steering arc outline
         svg.append("path")
             .attr("d", steeringArc)
             .attr("transform", `translate(${centerX}, ${dialCenterY})`)
@@ -657,7 +640,7 @@ export function renderRpmDial(svgElement, telemetryData) {
             .attr("stroke", "var(--color-primary)")
             .attr("stroke-width", rpmDial.controlArcStrokeWidth);
 
-        // Add horizontal line in the middle of the steering arc
+        // Vertical line in middle of the steering arc
         const lineStartPoint = polarToCartesian(centerX, dialCenterY, rpmDial.controlArcInnerRadius, steeringCenterAngle);
         const lineEndPoint = polarToCartesian(centerX, dialCenterY, rpmDial.controlArcInnerRadius + 2, steeringCenterAngle);
 
@@ -669,7 +652,7 @@ export function renderRpmDial(svgElement, telemetryData) {
             .attr("stroke", "var(--color-primary)")
             .attr("stroke-width", 1);
 
-        // Add "STR" text above the steering arc
+        // "STR" text
         const steeringTextPoint = polarToCartesian(centerX, dialCenterY, rpmDial.controlArcOuterRadius + 10, steeringCenterAngle);
         svg.append("text")
             .attr("x", steeringTextPoint.x)
@@ -680,7 +663,6 @@ export function renderRpmDial(svgElement, telemetryData) {
             .attr("class", "small-attribute-title-2")
             .text("STR");
 
-        // Draw filled steering arc (with default if telemetry data is unavailable)
         const steerValue = (telemetryData && telemetryData.Steer !== undefined) 
             ? telemetryData.Steer 
             : 0; // Default value of 0
@@ -695,11 +677,11 @@ export function renderRpmDial(svgElement, telemetryData) {
         const steeringArcSize = isDefaultSteer ? 5 : (rpmDial.steeringArcAngle / 2);
 
         if (steerValue >= 0) {
-            // Steering right (positive values)
+            // Steering right (positive)
             filledSteeringStartAngle = steeringCenterAngle;
             filledSteeringEndAngle = steeringCenterAngle + (steerRatio * steeringArcSize);
         } else {
-            // Steering left (negative values)
+            // Steering left (negative)
             filledSteeringStartAngle = steeringCenterAngle + (steerRatio * steeringArcSize);
             filledSteeringEndAngle = steeringCenterAngle;
         }
@@ -714,7 +696,7 @@ export function renderRpmDial(svgElement, telemetryData) {
             .attr("d", filledSteeringArc)
             .attr("transform", `translate(${centerX}, ${dialCenterY})`)
             .attr("fill", isDefaultSteer ? "var(--color-secondary)" : rpmDial.steeringColor)
-            .attr("opacity", isDefaultSteer ? 0.5 : 1) // Reduce opacity for default values
+            .attr("opacity", isDefaultSteer ? 0.5 : 1)
             .attr("stroke", "none");
 
         // Return position information for external components

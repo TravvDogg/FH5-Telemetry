@@ -22,7 +22,7 @@ const tireTempFields = {
 };
 
 // Configuration parameters for tire visualization
-const tire = {
+export const tire = {
     outerRadius: 30,      // Radius of the main circle
     innerLineLength: 6,   // Length of the cardinal lines
     centerRadius: 2,      // Radius of the center circle

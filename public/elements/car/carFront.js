@@ -48,11 +48,8 @@ export function rendercarFront(svgElement, telemetryData) {
             // Default transformations
             let rotationAngle = 0;
 
-            // Apply telemetry data
             if (telemetryData) {
-                // Rotate based on angular acceleration on Z axis (roll)
                 if (telemetryData.AngularVelocityZ !== undefined) {
-                    // Scale the rotation
                     rotationAngle = telemetryData.AngularVelocityZ * 5;
                 }
             }

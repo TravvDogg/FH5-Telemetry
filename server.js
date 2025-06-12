@@ -19,36 +19,34 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 
-// Import required modules
 const dgram     = require('dgram');
 const http      = require('http');
 const fs        = require('fs');
 const WebSocket = require('ws');
 
-// Server configuration
+// Server config
 const UDP_PORT  = 1555;  // Port to receive telemetry data from Forza
 const HTTP_PORT = 8000;  // Port for the web server
 const WS_PORT   = 8765;  // Port for WebSocket server
 const publicDir = path.join(__dirname, 'public');
 
-// Import field definitions from fields.js
+// Import field definitions
 const fieldsURL = pathToFileURL(path.join(__dirname, 'public', 'fields.js')).href;
 const { default: fields } = await import(fieldsURL);
 
 
-// Reader functions for parsing binary data from UDP packets
+// Reader functions for parsing binary data from UDP
 // Each function takes a buffer and an offset and returns the appropriate data type
 const readers = {
-  Boolean:      (buf, off) => buf.readFloatLE(off) > 0,  // Convert float to boolean
-  readFloatLE:  (buf, off) => buf.readFloatLE(off),      // Read 32-bit float
-  readUInt8:    (buf, off) => buf.readUInt8(off),        // Read 8-bit unsigned int
-  readInt8:     (buf, off) => buf.readInt8(off),         // Read 8-bit signed int
-  readUInt16LE: (buf, off) => buf.readUInt16LE(off),     // Read 16-bit unsigned int
-  readUInt32LE: (buf, off) => buf.readUInt32LE(off),     // Read 32-bit unsigned int
+  Boolean:      (buf, off) => buf.readFloatLE(off) > 0, // Convert float to boolean
+  readFloatLE:  (buf, off) => buf.readFloatLE(off),              // Read 32-bit float
+  readUInt8:    (buf, off) => buf.readUInt8(off),                // Read 8-bit unsigned int
+  readInt8:     (buf, off) => buf.readInt8(off),                 // Read 8-bit signed int
+  readUInt16LE: (buf, off) => buf.readUInt16LE(off),             // Read 16-bit unsigned int
+  readUInt32LE: (buf, off) => buf.readUInt32LE(off),             // Read 32-bit unsigned int
 };
 
-// WebSocket Server Setup
-// Create WebSocket server to broadcast telemetry data to clients
+// WebSocket Server
 const wss = new WebSocket.Server({ port: WS_PORT }, () =>
   console.log(`WS on ws://localhost:${WS_PORT}`));
 
@@ -63,10 +61,10 @@ function broadcast(msg) {
 }
 
 // UDP Server Setup
-// Create UDP server to receive telemetry data from Forza Horizon 5
+// Create UDP server to receive telemetry
 const udp = dgram.createSocket('udp4');
 
-// Process incoming UDP packets
+// Process UDP packets
 udp.on('message', data => {
   // Parse the binary data into a structured packet object
   const packet = {}
@@ -75,7 +73,7 @@ udp.on('message', data => {
     packet[f.name] = fn
       ? fn(data, f.offset) : null;
   }
-  // Broadcast the parsed data to all connected clients
+  // Broadcast the parsed data
   broadcast(JSON.stringify(packet));
 });
 
@@ -94,10 +92,10 @@ function getLocalIpAddress() {
       }
     }
   }
-  return 'localhost'; // Fallback to localhost if no external IP is found
+  return 'localhost';
 }
 
-// Get the local IP address for display in console
+// Get local IP to print to console
 const localIp = getLocalIpAddress();
 
 // Start the UDP server and listen for incoming packets
@@ -114,7 +112,7 @@ const mime = {
   '.css': 'text/css' 
 };
 
-// Create HTTP server to serve static files from the public directory
+// Create HTTP server to serve static files
 http.createServer((req, res) => {
   // Default to index.html for root requests
   let urlPath = req.url === '/' ? '/index.html' : req.url;
