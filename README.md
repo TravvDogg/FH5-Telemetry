@@ -8,4 +8,4 @@ Due to technical limitations (for now), there is no native standalone mobile opt
 1. Clone this repository
 2. Run `npm install` to install dependencies
 3. Start the server with `node server.js`
-4. Open your browser to the displayed URL (typically http://localhost:3000)
+4. Open your browser to the displayed URL (typically http://localhost:8000)
