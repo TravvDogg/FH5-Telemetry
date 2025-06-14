@@ -6,6 +6,7 @@ Due to technical limitations (for now), there is no native standalone mobile opt
 ## Setup Instructions
 
 1. Clone this repository
-2. Run `npm install` to install dependencies
-3. Start the server with `node server.js`
-4. Open your browser to the displayed URL (typically http://localhost:8000)
+2. Navigate to the project directory in your terminal
+3. Run `npm install` to install dependencies
+4. Start the server with `node server.js`
+5. Open your browser to the displayed URL (typically http://localhost:8000)
